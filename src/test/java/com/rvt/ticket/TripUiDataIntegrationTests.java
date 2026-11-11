@@ -137,7 +137,7 @@ class TripUiDataIntegrationTests {
     @Test void adminReadinessAndAssignmentFormRenderAndEndpointSaves() throws Exception {
         int id=TestTrips.open(tickets,db,form());tickets.changeSale(id,"DONG_BAN");int v=vehicle(busLayout());
         mvc.perform(get("/admin/chuyen-di/"+id).with(user("admin").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("Kiểm tra trước khi mở bán"))).andExpect(content().string(containsString("Phân công phương tiện")));
-        mvc.perform(post("/admin/chuyen-di/"+id+"/phuong-tien").with(user("admin").roles("ADMIN")).with(csrf()).param("vehicleId",String.valueOf(v))).andExpect(redirectedUrl("/admin/chuyen-di/"+id)).andExpect(flash().attributeExists("message"));
+        mvc.perform(post("/admin/chuyen-di/"+id+"/phuong-tien").with(user("admin").roles("ADMIN")).with(csrf()).param("vehicleId",String.valueOf(v))).andExpect(redirectedUrl("/admin/chuyen-di/"+id+".html")).andExpect(flash().attributeExists("message"));
         assertEquals(v,tickets.trip(id).get("PhuongTienID"));
     }
     @Test void supersededSystemReferenceKeepsBookedPriceAndTicketHistory(){

@@ -115,7 +115,7 @@ class SqlBookingIntegrationTests {
         assertNotEquals(password,stored);
         assertTrue(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().matches(password,stored));
         mvc.perform(post("/login").with(csrf()).param("username",username).param("password",password))
-            .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/workspace"))
+            .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/workspace.html"))
             .andExpect(org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated().withUsername(username));
         String code=service.book(trip("XE_KHACH"),form("A06"),username);
         String guestCode=service.book(trip("XE_KHACH"),form("A07"));
@@ -133,9 +133,9 @@ class SqlBookingIntegrationTests {
         assertNotEquals("123456",stored);
         assertTrue(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().matches("123456",stored));
         mvc.perform(post("/login").with(csrf()).param("username","admin").param("password","123456"))
-            .andExpect(redirectedUrl("/workspace")).andExpect(org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated().withUsername("admin"));
+            .andExpect(redirectedUrl("/workspace.html")).andExpect(org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated().withUsername("admin"));
         mvc.perform(post("/login").with(csrf()).param("username","staff").param("password","RvtTestOnly_Staff"))
-            .andExpect(redirectedUrl("/login?error")).andExpect(org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated());
+            .andExpect(redirectedUrl("/login.html?error")).andExpect(org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated());
         assertThrows(org.springframework.security.core.userdetails.UsernameNotFoundException.class,()->users.loadUserByUsername("staff"));
         mvc.perform(get("/staff/kiem-ve").with(user("staff").roles("STAFF"))).andExpect(status().isForbidden());
     }
@@ -236,7 +236,7 @@ class SqlBookingIntegrationTests {
         mvc.perform(get("/don-ve/"+code+"/qr/"+Integer.MAX_VALUE+".png").session(session)).andExpect(status().isNotFound());
         mvc.perform(get("/staff/kiem-ve?token="+token).with(user("admin").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.containsString("verified-ticket")));
         var photo=new org.springframework.mock.web.MockMultipartFile("photo","qr.png","image/png",png);
-        mvc.perform(multipart("/staff/kiem-ve/anh").file(photo).with(user("admin").roles("ADMIN")).with(csrf())).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/staff/kiem-ve?token="+token));
+        mvc.perform(multipart("/staff/kiem-ve/anh").file(photo).with(user("admin").roles("ADMIN")).with(csrf())).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/staff/kiem-ve.html?token="+token));
         assertThrows(IllegalArgumentException.class,()->qr.token("https://malicious.example"));
         assertThrows(IllegalArgumentException.class,()->qr.decode(new byte[]{1,2,3}));
         assertThrows(IllegalArgumentException.class,()->qr.decode(new byte[4*1024*1024+1]));
@@ -295,7 +295,7 @@ class SqlBookingIntegrationTests {
     @Test void httpVehicleCreationBindsTheReusableLayout() throws Exception {
         var v=vehicleForm("[{\"seat\":\"X01\",\"kind\":\"GHE_NGOI\",\"extra\":0,\"floor\":1,\"row\":1,\"column\":2}]");
         mvc.perform(post("/admin/phuong-tien/moi").with(user("admin").roles("ADMIN")).with(csrf()).param("code",v.code()).param("name",v.name()).param("registration",v.registration()).param("operator",v.operator()).param("type",v.type()).param("active","true").param("layout",v.layout()))
-            .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/admin/phuong-tien"));
+            .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/admin/phuong-tien.html"));
         int id=db.queryForObject("SELECT PhuongTienID FROM dbo.PhuongTien WHERE MaPhuongTien=?",Integer.class,v.code());
         assertEquals(1,fleet.seats(id).size());assertEquals(2,fleet.seats(id).getFirst().get("Cot"));assertEquals(true,fleet.vehicle(id,false).get("HoatDong"));
         mvc.perform(post("/admin/phuong-tien/moi").with(user("staff").roles("STAFF")).with(csrf())).andExpect(status().isForbidden());

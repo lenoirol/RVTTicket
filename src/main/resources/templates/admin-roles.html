@@ -1,0 +1,28 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Vai trò & phân quyền')}"></head><body class="admin-body"><header th:replace="~{fragments :: header('')}"></header><main id="main-content" class="container page">
+<div class="eyebrow">Phân quyền RBAC</div><h1 class="page-title">Vai trò &amp; phân quyền.</h1>
+<p class="muted">Quyền được gán theo vai trò. ADMIN có toàn quyền; OPERATOR chỉ xử lý đơn vé, quét QR, lịch hẹn và hỗ trợ. Khách hàng là TRAVELER (khách đi lẻ) hoặc AGENT (đại lý đặt hộ). Sau khi đổi vai trò, tài khoản đó phải đăng nhập lại.</p>
+<div th:replace="~{fragments :: messages}"></div>
+
+<section class="card section"><h2>Nhân sự nội bộ</h2><div class="table-scroll"><table><thead><tr><th>Tài khoản</th><th>Họ tên</th><th>Vai trò hiện tại</th><th>Đổi vai trò</th></tr></thead><tbody>
+<tr th:each="s:${staff}"><td><strong th:text="${s.TenDangNhap}"></strong><small th:if="${s.TenDangNhap==adminName}">Tài khoản đang đăng nhập</small></td><td th:text="${s.HoTen}"></td>
+<td><span class="status" th:classappend="${s.VaiTro=='ADMIN'}?'paid'" th:text="${staffRoles[s.VaiTro]}"></span></td>
+<td><form class="inline-form" th:if="${s.TenDangNhap!=adminName}" th:action="@{/admin/vai-tro/nhan-su/{id}(id=${s.TaiKhoanID})}" method="post" data-confirm="Đổi vai trò của tài khoản nhân sự này? Tài khoản sẽ phải đăng nhập lại."><select name="role" aria-label="Vai trò mới"><option th:each="r:${staffRoles}" th:value="${r.key}" th:text="${r.value}" th:selected="${r.key==s.VaiTro}"></option></select> <button class="button small outline">Lưu</button></form><small th:if="${s.TenDangNhap==adminName}">Không tự đổi vai trò của chính mình</small></td></tr>
+</tbody></table></div></section>
+
+<form class="card stack section" th:action="@{/admin/vai-tro/nhan-su}" method="post" data-unsaved><h2>Thêm tài khoản nhân sự</h2>
+<label>Tên đăng nhập<input name="username" pattern="[a-z0-9_]{4,40}" maxlength="40" autocomplete="off" required><small>4–40 ký tự thường, số hoặc dấu gạch dưới; không trùng tài khoản khách.</small></label>
+<label>Họ tên<input name="name" maxlength="100" required></label>
+<label>Vai trò<select name="role"><option th:each="r:${staffRoles}" th:value="${r.key}" th:text="${r.value}" th:selected="${r.key=='OPERATOR'}"></option></select></label>
+<label>Mật khẩu<input type="password" name="password" minlength="10" maxlength="64" autocomplete="new-password" required><small>10–64 ký tự. Mật khẩu được băm bằng BCrypt.</small></label>
+<label>Nhập lại mật khẩu<input type="password" name="confirmation" minlength="10" maxlength="64" autocomplete="new-password" required></label>
+<button class="button">Tạo tài khoản</button></form>
+
+<section class="card section"><h2>Vai trò khách hàng</h2>
+<form class="admin-filters" action="/admin/vai-tro.html" method="get"><label class="filter-keyword">Tìm khách<input name="q" th:value="${q}" maxlength="100" placeholder="Tên đăng nhập, họ tên, số điện thoại"></label><label>Vai trò<select name="state"><option value="">Tất cả</option><option th:each="r:${customerRoles}" th:value="${r.key}" th:text="${r.value}" th:selected="${state==r.key}"></option></select></label><button class="button">Lọc</button><a class="text-link" href="/admin/vai-tro.html">Bỏ lọc</a></form>
+<div class="table-scroll"><table><thead><tr><th>Tài khoản</th><th>Khách hàng</th><th>Vai trò hiện tại</th><th>Đổi vai trò</th></tr></thead><tbody>
+<tr th:each="a:${listing.rows}"><td><a class="text-link" th:href="@{/admin/khach-hang/{id}(id=${a.TaiKhoanID})}" th:text="${a.TenDangNhap}"></a><small th:if="${a.BiKhoa}">Đã khóa</small></td><td><strong th:text="${a.HoTen}"></strong><small th:text="${a.SoDienThoai}"></small></td>
+<td><span class="status" th:classappend="${a.VaiTro=='AGENT'}?'paid'" th:text="${customerRoles[a.VaiTro]}"></span></td>
+<td><form class="inline-form" th:action="@{/admin/vai-tro/khach/{id}(id=${a.TaiKhoanID})}" method="post"><input type="hidden" name="q" th:value="${q}"><input type="hidden" name="state" th:value="${state}"><input type="hidden" name="page" th:value="${listing.page}"><select name="role" aria-label="Vai trò mới"><option th:each="r:${customerRoles}" th:value="${r.key}" th:text="${r.value}" th:selected="${r.key==a.VaiTro}"></option></select> <button class="button small outline">Lưu</button></form></td></tr>
+<tr th:if="${#lists.isEmpty(listing.rows)}"><td colspan="4" class="admin-empty">Chưa có tài khoản phù hợp.</td></tr></tbody></table></div>
+<nav th:replace="~{admin-fragments :: pagination}"></nav></section>
+</main><footer th:replace="~{fragments :: footer}"></footer></body></html>

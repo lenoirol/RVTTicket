@@ -131,10 +131,10 @@ class VnpayIntegrationTests {
         var f=callback(code,name);gateway.ipn(f);
         mvc.perform(get("/don-ve/"+code).session(session).with(user(name).roles("CUSTOMER"))).andExpect(content().string(containsString("VNPay · Đã xác minh thanh toán"))).andExpect(content().string(not(containsString("Sandbox"))));
         var request=get("/thanh-toan/vnpay/return").with(user(name).roles("CUSTOMER"));f.forEach(request::param);
-        mvc.perform(request).andExpect(content().string(containsString("RVT TICKET · VNPAY"))).andExpect(content().string(not(containsString("SANDBOX")))).andExpect(content().string(not(containsString("Sandbox"))));
+        mvc.perform(request).andExpect(content().string(containsString("RVT Ticket · VNPay"))).andExpect(content().string(not(containsString("SANDBOX")))).andExpect(content().string(not(containsString("Sandbox"))));
         mvc.perform(get("/huong-dan")).andExpect(status().isOk()).andExpect(content().string(containsString("Thanh toán qua VNPay hoặc số dư RVT"))).andExpect(content().string(not(containsString("Phiên bản học tập không thu tiền thật"))));
         mvc.perform(get("/admin/vnpay").with(user("admin").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(not(containsString("Sandbox"))));
-        mvc.perform(get("/admin/thong-ke").with(user("admin").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("GIÁ TRỊ GIAO DỊCH GHI NHẬN"))).andExpect(content().string(not(containsString("MÔ PHỎNG"))));
+        mvc.perform(get("/admin/thong-ke").with(user("admin").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(containsString("Giá trị giao dịch ghi nhận"))).andExpect(content().string(not(containsString("MÔ PHỎNG"))));
     }
     @Test void ipnIsAnonymousIndependentOfBrowserSession() throws Exception {
         String name=customer(),code=booking(name);var f=callback(code,name);var request=get("/thanh-toan/vnpay/ipn");f.forEach(request::param);

@@ -44,7 +44,7 @@ class AdminWorkspaceIntegrationTests {
     BookingForm booking(String seat){var f=new BookingForm();f.setName("Khách thử nghiệm");f.setPhone("0900000000");var p=new BookingForm.Passenger();p.setSeat(seat);p.setName("Hành khách thử nghiệm");p.setLuggage(BigDecimal.ZERO);f.getPassengers().add(p);return f;}
     @Test void everyWorkspacePageRendersAndOnlyAdminCanAccess() throws Exception {
         int id=TestTrips.open(tickets,db,tripForm());String customer=customer();int customerId=customerId(customer);String code=tickets.book(id,booking("A01"),customer);
-        for(String url:List.of("/admin","/admin/chuyen-di","/admin/chuyen-di/"+id,"/admin/chuyen-di/moi?copy="+id,"/admin/don-ve","/admin/don-ve/"+code,"/admin/khach-hang","/admin/khach-hang/"+customerId,"/admin/nhat-ky","/admin/tai-khoan","/admin/kiem-ve")) {
+        for(String url:List.of("/admin","/admin/chuyen-di","/admin/chuyen-di/"+id,"/admin/chuyen-di/moi?copy="+id,"/admin/don-ve","/admin/don-ve/"+code,"/admin/khach-hang","/admin/khach-hang/"+customerId,"/admin/nhat-ky","/admin/tai-khoan","/admin/kiem-ve","/admin/vai-tro")) {
             mvc.perform(get(url).with(user("admin").roles("ADMIN"))).andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.containsString("operator-sidebar")));
             mvc.perform(get(url).with(user(customer).roles("CUSTOMER"))).andExpect(status().isForbidden());
             mvc.perform(get(url).with(user("staff").roles("STAFF"))).andExpect(status().isForbidden());
@@ -56,8 +56,8 @@ class AdminWorkspaceIntegrationTests {
         assertThrows(IllegalArgumentException.class,()->workspace.lockCustomer(account,true,"","admin"));
         workspace.lockCustomer(account,true,"Kiểm thử khóa tài khoản","admin");assertFalse(users.loadUserByUsername(name).isEnabled());
         mvc.perform(post("/login").with(csrf()).param("username",name).param("password","CustomerTest_123"))
-            .andExpect(redirectedUrl("/login?error")).andExpect(org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated());
-        var session=new MockHttpSession();mvc.perform(get("/tai-khoan").session(session).with(user(name).roles("CUSTOMER"))).andExpect(redirectedUrl("/login?locked"));assertTrue(session.isInvalid());
+            .andExpect(redirectedUrl("/login.html?error")).andExpect(org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated());
+        var session=new MockHttpSession();mvc.perform(get("/tai-khoan").session(session).with(user(name).roles("CUSTOMER"))).andExpect(redirectedUrl("/login.html?locked"));assertTrue(session.isInvalid());
         assertEquals(1,accounts.history(name).size());assertEquals(code,accounts.history(name).getFirst().get("MaDon"));
         assertThrows(IllegalArgumentException.class,()->tickets.book(id,booking("A02"),name));
         workspace.lockCustomer(account,false,"","admin");assertTrue(users.loadUserByUsername(name).isEnabled());
@@ -131,7 +131,7 @@ class AdminWorkspaceIntegrationTests {
         mvc.perform(post("/admin/khach-hang/"+id+"/khoa").with(user("admin").roles("ADMIN")).param("locked","true").param("reason","Test")).andExpect(status().isForbidden());
         mvc.perform(post("/admin/khach-hang/"+id+"/khoa").with(user("staff").roles("STAFF")).with(csrf()).param("locked","true").param("reason","Test")).andExpect(status().isForbidden());
         mvc.perform(post("/admin/khach-hang/"+id+"/khoa").with(user("admin").roles("ADMIN")).with(csrf()).param("locked","true").param("reason","Lý do HTTP"))
-            .andExpect(redirectedUrl("/admin/khach-hang/"+id));assertEquals(Boolean.TRUE,workspace.customer(id).get("BiKhoa"));
+            .andExpect(redirectedUrl("/admin/khach-hang/"+id+".html"));assertEquals(Boolean.TRUE,workspace.customer(id).get("BiKhoa"));
         mvc.perform(get("/admin/don-ve?status=INVALID").with(user("admin").roles("ADMIN"))).andExpect(status().isBadRequest());
     }
     @Test void finalHttpCreationRevalidatesAndCreatesOnlyAfterReview() throws Exception {
@@ -140,18 +140,18 @@ class AdminWorkspaceIntegrationTests {
             .param("vehicleId",f.getVehicleId().toString()).param("code",f.getCode()).param("operator",f.getOperator()).param("from",f.getFrom()).param("to",f.getTo())
             .param("departure",f.getDeparture().toString()).param("arrival",f.getArrival().toString()).param("price","320000").param("days","1");
         mvc.perform(request).andExpect(view().name("trip-preview"));assertEquals(0,workspace.trips(f.getCode(),"","",null,null,1).total());
-        mvc.perform(request.param("reviewed","true")).andExpect(redirectedUrl("/admin/chuyen-di"));
+        mvc.perform(request.param("reviewed","true")).andExpect(redirectedUrl("/admin/chuyen-di.html"));
         var created=workspace.trips(f.getCode(),"","",null,null,1);assertEquals(1,created.total());
         int id=((Number)created.rows().getFirst().get("ChuyenDiID")).intValue();assertEquals("DONG_BAN",tickets.trip(id).get("TrangThai"));
-        mvc.perform(post("/admin/chuyen-di/"+id).with(user("admin").roles("ADMIN")).with(csrf()).param("status","MO_BAN")).andExpect(redirectedUrl("/admin/chuyen-di"));
+        mvc.perform(post("/admin/chuyen-di/"+id).with(user("admin").roles("ADMIN")).with(csrf()).param("status","MO_BAN")).andExpect(redirectedUrl("/admin/chuyen-di.html"));
         assertEquals("MO_BAN",tickets.trip(id).get("TrangThai"));
     }
     @Test void orderCancelHttpRequiresReasonAndRecordsActualRefund() throws Exception {
         var f=tripForm();int id=TestTrips.open(tickets,db,f);String code=tickets.book(id,booking("A01"));tickets.pay(code,"0900000000");
         mvc.perform(post("/admin/don-ve/"+code).with(user("admin").roles("ADMIN")).with(csrf()).param("action","cancel"))
-            .andExpect(redirectedUrl("/admin/don-ve/"+code)).andExpect(flash().attributeExists("error"));assertEquals("DA_THANH_TOAN",tickets.staffOrder(code).get("TrangThai"));
+            .andExpect(redirectedUrl("/admin/don-ve/"+code+".html")).andExpect(flash().attributeExists("error"));assertEquals("DA_THANH_TOAN",tickets.staffOrder(code).get("TrangThai"));
         mvc.perform(post("/admin/don-ve/"+code).with(user("admin").roles("ADMIN")).with(csrf()).param("action","cancel").param("reason","Hủy theo yêu cầu đã đối chiếu"))
-            .andExpect(redirectedUrl("/admin/don-ve/"+code)).andExpect(flash().attributeExists("message"));assertEquals("DA_HUY",tickets.staffOrder(code).get("TrangThai"));
+            .andExpect(redirectedUrl("/admin/don-ve/"+code+".html")).andExpect(flash().attributeExists("message"));assertEquals("DA_HUY",tickets.staffOrder(code).get("TrangThai"));
         mvc.perform(get("/admin/don-ve/"+code).with(user("admin").roles("ADMIN"))).andExpect(content().string(org.hamcrest.Matchers.containsString("Lý do hủy:")));
     }
 }

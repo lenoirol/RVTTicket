@@ -33,18 +33,18 @@ class MobileFeedbackIntegrationTests {
         var page=mvc.perform(get("/dang-ky").session(session)).andExpect(status().isOk()).andReturn();
         var oldToken=(CsrfToken)page.getRequest().getAttribute(CsrfToken.class.getName());
         mvc.perform(post("/dang-ky").session(session).param(oldToken.getParameterName(),oldToken.getToken()).param("username",username).param("password",PASSWORD).param("name","Khách kiểm thử").param("phone","0900000000"))
-            .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/tai-khoan/ho-so")).andExpect(authenticated().withUsername(username).withRoles("CUSTOMER","TRAVELER"));
+            .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/tai-khoan/ho-so.html")).andExpect(authenticated().withUsername(username).withRoles("CUSTOMER","TRAVELER"));
         assertNotEquals(oldSessionId,session.getId());assertNull(session.getAttribute("SPRING_SECURITY_SAVED_REQUEST"));
         var profile=mvc.perform(get("/tai-khoan/ho-so").session(session)).andExpect(status().isOk()).andReturn();
         var newToken=(CsrfToken)profile.getRequest().getAttribute(CsrfToken.class.getName());assertNotEquals(oldToken.getToken(),newToken.getToken());
         mvc.perform(post("/tai-khoan/ho-so").session(session).param(newToken.getParameterName(),newToken.getToken()).param("name","Khách kiểm thử").param("phone","0900000000").param("birthDate","1985-05-10").param("documentType","CCCD").param("document","012345678901").param("nationality","Việt Nam"))
-            .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/tai-khoan/ho-so")).andExpect(flash().attributeExists("message"));
+            .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/tai-khoan/ho-so.html")).andExpect(flash().attributeExists("message"));
         assertEquals("012345678901",accounts.passengerDefaults(username).get("document"));
     }
     @Test void customerLoginNeverResumesAnAdminPage() throws Exception {
         String username=customer();var session=new MockHttpSession();mvc.perform(get("/admin").session(session)).andExpect(status().is3xxRedirection());
-        mvc.perform(post("/login").session(session).with(csrf()).param("username",username).param("password",PASSWORD)).andExpect(redirectedUrl("/workspace")).andExpect(authenticated().withUsername(username));
-        mvc.perform(get("/workspace").session(session)).andExpect(redirectedUrl("/tai-khoan"));mvc.perform(get("/tai-khoan").session(session)).andExpect(status().isOk());
+        mvc.perform(post("/login").session(session).with(csrf()).param("username",username).param("password",PASSWORD)).andExpect(redirectedUrl("/workspace.html")).andExpect(authenticated().withUsername(username));
+        mvc.perform(get("/workspace").session(session)).andExpect(redirectedUrl("/tai-khoan.html"));mvc.perform(get("/tai-khoan").session(session)).andExpect(status().isOk());
     }
     @Test void passengerDefaultsAreCompleteAndDoNotExposeAuthenticationFields() {
         String username=customer();accounts.updatePassengerProfile(username,"Khách kiểm thử","0900000000","qa@example.com",LocalDate.of(1985,5,10),"CCCD","012345678901","Việt Nam");
@@ -56,6 +56,6 @@ class MobileFeedbackIntegrationTests {
         accounts.updatePassengerProfile(username,"Khách kiểm thử","0900000000","",null,"CCCD","","Việt Nam");assertEquals("",accounts.passengerDefaults(username).get("document"));
     }
     @Test void homepageHasFourRealDestinationSlides() throws Exception {
-        mvc.perform(get("/")).andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.containsString("data-destination-carousel"))).andExpect(content().string(org.hamcrest.Matchers.containsString("Hạ Long"))).andExpect(content().string(org.hamcrest.Matchers.containsString("Đà Nẵng"))).andExpect(content().string(org.hamcrest.Matchers.containsString("Đà Lạt")));
+        mvc.perform(get("/")).andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.containsString("data-places"))).andExpect(content().string(org.hamcrest.Matchers.containsString("Hạ Long"))).andExpect(content().string(org.hamcrest.Matchers.containsString("Đà Nẵng"))).andExpect(content().string(org.hamcrest.Matchers.containsString("Đà Lạt")));
     }
 }

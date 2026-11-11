@@ -33,6 +33,7 @@
         <a sec:authorize="hasRole('ADMIN')" href="/admin/thong-ke.html" th:classappend="${#strings.startsWith(adminPath,'/admin/thong-ke')}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M8 16v-5m5 5V7m5 9V4"/></svg>Báo cáo</a>
         <small class="operator-nav-heading">Thiết lập</small>
         <a sec:authorize="hasRole('ADMIN')" href="/admin/chinh-sach.html" th:classappend="${#strings.startsWith(adminPath,'/admin/chinh-sach')}?'active'">Chính sách giá &amp; hành lý</a>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin/vai-tro.html" th:classappend="${#strings.startsWith(adminPath,'/admin/vai-tro')}?'active'">Vai trò &amp; phân quyền</a>
         <a sec:authorize="hasRole('ADMIN')" href="/admin/nhat-ky.html" th:classappend="${#strings.startsWith(adminPath,'/admin/nhat-ky')}?'active'">Nhật ký thao tác</a>
         <a href="/admin/tai-khoan.html" th:classappend="${#strings.startsWith(adminPath,'/admin/tai-khoan')}?'active'">Tài khoản &amp; bảo mật</a>
       </nav><p class="operator-demo"><span class="dot"></span>RVT Ticket · Quản trị vận hành</p>

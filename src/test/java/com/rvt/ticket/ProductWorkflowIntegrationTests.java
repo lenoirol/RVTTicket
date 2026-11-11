@@ -44,7 +44,7 @@ class ProductWorkflowIntegrationTests {
     @Test void passwordVersionEndsOldSessions() throws Exception{
         String name=customer();var old=users.loadUserByUsername(name);assertInstanceOf(CustomerIdentity.class,old);accounts.changePassword(name,PASSWORD,"NextPassword_123","NextPassword_123");
         var auth=UsernamePasswordAuthenticationToken.authenticated(old,null,old.getAuthorities());
-        mvc.perform(get("/tai-khoan").with(authentication(auth))).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login?changed"));
+        mvc.perform(get("/tai-khoan").with(authentication(auth))).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login.html?changed"));
         assertTrue(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().matches("NextPassword_123",users.loadUserByUsername(name).getPassword()));
     }
     @Test void customerHistoryFiltersAndPaginationArePrivate(){

@@ -22,7 +22,8 @@ public class AdminWorkspaceService {
         Map.entry("PHAN_CONG_PHUONG_TIEN","Phân công phương tiện"),
         Map.entry("VNPAY_REVIEW","VNPay cần đối chiếu"),Map.entry("VNPAY_PAY","VNPay xác nhận thanh toán"),
         Map.entry("VNPAY_HOAN_RVT","Hoàn ngoại lệ VNPay vào RVT"),Map.entry("NHAP_VE_GOC","Gắn vé gốc vào đơn"),
-        Map.entry("KHOA_KHACH","Khóa khách hàng"),Map.entry("MO_KHOA_KHACH","Mở khóa khách hàng"),Map.entry("DOI_MAT_KHAU","Đổi mật khẩu"),Map.entry("TRA_LOI_HO_TRO","Trả lời hỗ trợ"));
+        Map.entry("KHOA_KHACH","Khóa khách hàng"),Map.entry("MO_KHOA_KHACH","Mở khóa khách hàng"),Map.entry("DOI_MAT_KHAU","Đổi mật khẩu"),Map.entry("TRA_LOI_HO_TRO","Trả lời hỗ trợ"),
+        Map.entry("DOI_VAI_TRO_NHAN_SU","Đổi vai trò nhân sự"),Map.entry("TAO_NHAN_SU","Tạo tài khoản nhân sự"),Map.entry("DOI_VAI_TRO_KHACH","Đổi vai trò khách hàng"));
     private static final String TRIP_COLUMNS="""
         c.*,COALESCE(c.TenPhuongTienSnapshot,N'Chưa phân công phương tiện') AS TenPhuongTien,
         (SELECT COUNT(*) FROM dbo.ChoNgoi s WHERE s.ChuyenDiID=c.ChuyenDiID) AS SoChoKhaiBao,
