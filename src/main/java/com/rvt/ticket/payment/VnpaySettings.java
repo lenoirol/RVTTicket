@@ -12,6 +12,10 @@ public class VnpaySettings {
     private final String tmnCode,secret,baseUrl;
     @Value("${rvt.vnpay.return-origins:http://localhost:8080,http://127.0.0.1:8080}")
     private String returnOrigins="http://localhost:8080,http://127.0.0.1:8080";
+    /** Off by default. Lets a VNPay-signed browser Return settle with the same checks as IPN, for hosts VNPay cannot reach by IPN and that cannot reach querydr. */
+    @Value("${rvt.vnpay.return-settles:false}")
+    private boolean returnSettles=false;
+    public boolean returnSettles(){return enabled&&returnSettles;}
     public VnpaySettings(@Value("${rvt.vnpay.enabled:false}") boolean enabled,
             @Value("${rvt.vnpay.tmn-code:}") String tmnCode,
             @Value("${rvt.vnpay.hash-secret:}") String secret,

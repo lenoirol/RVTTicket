@@ -31,6 +31,11 @@ public class VnpayController {
             jakarta.servlet.http.HttpServletResponse response) {
         response.setHeader("Cache-Control","no-store");
         Map<String,Object> result;
+        if(gateway.returnSettles()) {
+            // Same verification as IPN; failures leave the attempt pending for IPN/querydr.
+            try{gateway.signedReturn(VnpayCodec.parameters(params));}
+            catch(IllegalArgumentException|DataAccessException ignored){}
+        }
         try{result=gateway.result(VnpayCodec.parameters(params));}
         catch(IllegalArgumentException e){result=Map.of("state","INVALID");}
         m.addAttribute("result",result);m.addAttribute("orderUrl",null);

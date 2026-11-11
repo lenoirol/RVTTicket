@@ -20,7 +20,7 @@
 <small th:if="${a.CanDoiSoat==true}">Cần đối soát tại Merchant</small><small th:if="${a.LoiTruyVan!=null}" th:text="${a.LoiTruyVan}"></small></td>
 <td><strong th:text="${a.XuLyDoiSoat=='HOAN_RVT'?'Đã hoàn RVT':a.TrangThai=='REVIEW'?'Cần đối chiếu':a.TrangThai=='SUCCESS'?'Đã xác nhận vé':a.TrangThai=='FAILED'?'Không thành công':'Chờ xác nhận'}"></strong>
 <small th:text="${a.GhiChu==null?'':#strings.replace(a.GhiChu,'VNPay Sandbox','VNPay')}"></small>
-<small th:if="${a.NguonXacNhan!=null}" th:text="${a.NguonXacNhan=='IPN'?'Nguồn: IPN':a.NguonXacNhan=='QUERYDR'?'Nguồn: truy vấn máy chủ':'Nguồn: bản ghi lịch sử'}"></small>
+<small th:if="${a.NguonXacNhan!=null}" th:text="${a.NguonXacNhan=='IPN'?'Nguồn: IPN':a.NguonXacNhan=='QUERYDR'?'Nguồn: truy vấn máy chủ':a.NguonXacNhan=='RETURN'?'Nguồn: Return đã ký':'Nguồn: bản ghi lịch sử'}"></small>
 </td><td><span th:text="${a.MaVNPay==null?'—':a.MaVNPay}"></span><small th:text="${a.MaNganHang}"></small><small th:if="${a.MaKetQua!=null}" th:text="'Mã kết quả: '+${a.MaKetQua}+' / '+${a.TrangThaiVNPay}"></small></td>
 <td><form th:if="${a.TrangThai=='PENDING' &amp;&amp; queryEnabled}" th:action="@{/admin/vnpay/{ref}/truy-van(ref=${a.MaThamChieu})}" method="post" data-busy><button class="button outline small">Truy vấn VNPay</button></form>
 <form class="stack" th:if="${a.TrangThai=='REVIEW' &amp;&amp; a.XuLyDoiSoat==null}" th:action="@{/admin/vnpay/{ref}/hoan-rvt(ref=${a.MaThamChieu})}" method="post" data-busy th:attr="data-confirm='Hoàn '+${#numbers.formatDecimal(a.SoTien,0,'POINT',0,'COMMA')}+' đồng vào số dư RVT cho giao dịch '+${a.MaThamChieu}+'? Không cấp lại vé và không hoàn về ngân hàng.'">

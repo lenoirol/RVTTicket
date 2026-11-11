@@ -105,3 +105,11 @@ Kết quả regression của bản mới và giới hạn kiểm tra: [FIXES_202
 - [Hướng dẫn PAY, Return và IPN của VNPay](https://sandbox.vnpayment.vn/apis/docs/thanh-toan-pay/pay.html)
 - [HMAC-SHA512 và phiên bản 2.1.0](https://sandbox.vnpayment.vn/apis/docs/chuyen-doi-thuat-toan/changeTypeHash.html)
 - [Tailscale Funnel và quyền truy cập công khai](https://tailscale.com/docs/features/tailscale-funnel)
+
+## Triển khai Render (11/11/2026)
+
+- Website: `https://rvtticket.onrender.com` (Render Free, Frankfurt). Merchant Sandbox mới `ON9Z9THO` đăng ký đúng tên miền này; mã cũ gắn với tên miền Tailscale nên VNPay trả lỗi 71 "Website này chưa được phê duyệt".
+- Từ Render (Đức), gọi `querydr` tới sandbox VNPay bị `HttpConnectTimeoutException` (từ máy ở Việt Nam thì kết nối được). IPN chưa được VNPay đăng ký.
+- Vì vậy bật `VNPAY_RETURN_SETTLES=true`: trang Return có chữ ký HMAC hợp lệ đi qua đúng hàm `settle` như IPN (chữ ký, merchant, tham chiếu, số tiền, cả hai mã `00`, mã giao dịch VNPay chưa dùng, đơn còn giữ chỗ), khóa SQL như cũ, ghi `NguonXacNhan='RETURN'`. Return/IPN lặp lại trả `02`, không ghi nhận hai lần. Mặc định `false` để giữ nguyên thiết kế chỉ tin IPN/querydr.
+- Giới hạn: nếu khách đóng trình duyệt trước khi về Return thì vẫn cần IPN (đã đề nghị đăng ký `https://rvtticket.onrender.com/thanh-toan/vnpay/ipn`) hoặc đối soát thủ công.
+- Kiểm thử SQL `VnpayReturnSettlementIntegrationTests` cần `RVT_SQL_TEST=true` và SQL Server; chưa chạy được trong lần triển khai này.

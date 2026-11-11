@@ -87,6 +87,17 @@ public class VnpayService {
     }
     @Transactional(rollbackFor = Exception.class)
     public Map<String,String> verifiedQuery(Map<String,String> fields){return settle(fields,"QUERYDR");}
+    public boolean returnSettles(){return settings.returnSettles();}
+    /**
+     * Only when rvt.vnpay.return-settles=true: the browser Return carries the same HMAC-signed fields as IPN,
+     * so it goes through the identical checks (signature, merchant, reference, amount, both result codes,
+     * unused transaction number, seat hold still valid) and the same locks; a repeated Return or a later IPN is a no-op.
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Map<String,String> signedReturn(Map<String,String> fields){
+        if(!returnSettles())return reply("97","Return settlement disabled");
+        return settle(fields,"RETURN");
+    }
     private Map<String,String> settle(Map<String,String> fields,String source) {
         if(!valid(fields))return reply("97","Invalid signature");
         String ref=fields.getOrDefault("vnp_TxnRef","");
@@ -168,7 +179,7 @@ public class VnpayService {
         db.update("INSERT dbo.NhatKyThaoTac(NguoiThucHien,HanhDong,DoiTuong,NoiDung) VALUES(?,'VNPAY_HOAN_RVT',?,?)",actor,reference,reason.strip());
         notifications.order(order,"VNPAY_REFUND_"+reference,"Đã xử lý giao dịch VNPay","Giao dịch "+reference+" đã được hoàn vào số dư RVT hoặc lưu chờ chủ đơn xác nhận tài khoản. Trạng thái vé không thay đổi.");
     }
-    /** Browser redirects are read-only, even when signed. IPN or a verified server query settles a booking. */
+    /** Reads the attempt state for the Return page. Settling from Return happens only via signedReturn when explicitly enabled. */
     public Map<String,Object> result(Map<String,String> fields) {
         if(!valid(fields))return Map.of("state","INVALID");
         var rows=db.queryForList("SELECT a.*,o.MaDon,CASE WHEN EXISTS(SELECT 1 FROM dbo.HoanVNPayChoNhan h WHERE h.MaThamChieu=a.MaThamChieu AND h.DaNhan=0) THEN 1 ELSE 0 END AS ChoNhanRVT FROM dbo.GiaoDichVNPay a JOIN dbo.DonDatVe o ON o.DonDatVeID=a.DonDatVeID WHERE a.MaThamChieu=? AND a.TmnCode=?",fields.get("vnp_TxnRef"),settings.tmnCode());
