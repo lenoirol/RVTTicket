@@ -3,21 +3,21 @@
 <head th:fragment="head(title)">
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title th:text="${title} + ' · RVT Ticket'">RVT Ticket</title>
-  <link rel="icon" href="/images/logo.svg"><link rel="stylesheet" href="/css/fonts.css"><link rel="stylesheet" href="/css/fonts-web.css"><link rel="preload" href="/fonts/web/barlow-condensed-vietnamese-700-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/css/app.css"><link rel="stylesheet" href="/css/experience.css"><link rel="stylesheet" href="/css/motion.css">
-  <link rel="stylesheet" href="/css/product.css"><script type="module" src="/js/product.js"></script>
-  <link rel="stylesheet" href="/css/destination-carousel.css"><script type="module" src="/js/destination-carousel.js"></script>
-  <link th:if="${adminLayout}" rel="stylesheet" href="/css/admin.css">
-  <script th:if="${adminLayout}" type="module" src="/js/admin.js"></script>
+  <link rel="icon" th:href="@{/images/logo.svg}"><link rel="stylesheet" th:href="@{/css/fonts.css}"><link rel="stylesheet" th:href="@{/css/fonts-web.css}"><link rel="preload" th:href="@{/fonts/web/barlow-condensed-vietnamese-700-normal.woff2}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" th:href="@{/css/app.css}"><link rel="stylesheet" th:href="@{/css/experience.css}"><link rel="stylesheet" th:href="@{/css/motion.css}">
+  <link rel="stylesheet" th:href="@{/css/product.css}"><script type="module" th:src="@{/js/product.js}"></script>
+  <link rel="stylesheet" th:href="@{/css/destination-carousel.css}"><script type="module" th:src="@{/js/destination-carousel.js}"></script>
+  <link th:if="${adminLayout}" rel="stylesheet" th:href="@{/css/admin.css}">
+  <script th:if="${adminLayout}" type="module" th:src="@{/js/admin.js}"></script>
   <script th:inline="javascript">window.savedPassengers = /*[[${booking != null ? booking.passengers : null}]]*/ null; window.fieldErrors = /*[[${fieldErrors}]]*/ {};</script>
   <script th:if="${passengerProfile!=null}" th:inline="javascript">window.passengerProfile = /*[[${passengerProfile}]]*/ {};</script>
-  <meta name="csrf-token" th:content="${_csrf.token}"><meta name="csrf-header" th:content="${_csrf.headerName}"><link rel="stylesheet" href="/css/rvt-balance.css"><link rel="stylesheet" href="/css/theme.css"><script type="module" src="/js/notifications.js"></script><script type="module" src="/js/app.js"></script>
+  <meta name="csrf-token" th:content="${_csrf.token}"><meta name="csrf-header" th:content="${_csrf.headerName}"><link rel="stylesheet" th:href="@{/css/rvt-balance.css}"><link rel="stylesheet" th:href="@{/css/theme.css}"><script type="module" th:src="@{/js/notifications.js}"></script><script type="module" th:src="@{/js/app.js}"></script>
 </head>
 <body>
 <header th:fragment="header(active)" th:class="${adminLayout==true?'operator-header':'header'}">
   <a href="#main-content" class="skip-link">Bỏ qua điều hướng</a>
   <th:block th:if="${adminLayout}">
-    <aside class="operator-sidebar" id="operator-navigation"><a href="/workspace.html" class="brand"><img src="/images/logo.svg" alt=""><span>RVT Ticket<small>Quản trị vận hành</small></span></a>
+    <aside class="operator-sidebar" id="operator-navigation"><a href="/workspace.html" class="brand"><img th:src="@{/images/logo.svg}" alt=""><span>RVT Ticket<small>Quản trị vận hành</small></span></a>
       <nav aria-label="Quản trị RVT Ticket"><small class="operator-nav-heading">Điều hành</small>
         <a sec:authorize="hasRole('ADMIN')" href="/admin.html" th:classappend="${adminPath=='/admin'}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>Tổng quan</a>
         <a sec:authorize="hasRole('ADMIN')" href="/admin/chuyen-di.html" th:classappend="${#strings.startsWith(adminPath,'/admin/chuyen-di')}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v13H5zM5 10h14M8 20v-3m8 3v-3M8 14h1m6 0h1"/></svg>Chuyến đi</a>
@@ -41,13 +41,13 @@
     <button type="button" class="operator-overlay" id="operator-overlay" aria-label="Đóng menu" hidden></button>
   </th:block>
   <div class="container nav" th:unless="${adminLayout}">
-    <a href="/" class="brand" aria-label="RVT Ticket — Trang chủ"><img src="/images/logo.svg" alt=""><span>RVT<span class="brand-light"> Ticket</span><small>Xe khách &amp; tàu / thuyền</small></span></a>
+    <a href="/" class="brand" aria-label="RVT Ticket — Trang chủ"><img th:src="@{/images/logo.svg}" alt=""><span>RVT<span class="brand-light"> Ticket</span><small>Xe khách &amp; tàu / thuyền</small></span></a>
     <nav aria-label="Điều hướng chính"><a href="/" th:classappend="${active=='home'}?'active'">Trang chủ</a><a href="/chuyen-di.html?type=XE_KHACH" th:classappend="${active=='bus'}?'active'">Xe khách</a><a href="/chuyen-di.html?type=TAU_THUYEN" th:classappend="${active=='boat'}?'active'">Tàu / thuyền</a><a href="/diem-den.html" th:classappend="${active=='places'}?'active'">Điểm đến</a><a href="/lich-hen.html" th:classappend="${active=='appointment'}?'active'">Tư vấn</a><a href="/chinh-sach.html" th:classappend="${active=='policy'}?'active'">Chính sách</a></nav>
     <div class="nav-actions"><div sec:authorize="hasRole('CUSTOMER')" class="notification-hub"><button type="button" id="notification-toggle" class="notification-toggle" aria-expanded="false" aria-controls="notification-panel" aria-label="Thông báo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0v5l-2 3h16l-2-3zM9 20h6"/></svg><span id="notification-count" hidden>0</span></button><section id="notification-panel" class="notification-panel" hidden aria-label="Thông báo của bạn"><h3>Thông báo</h3><div id="notification-items"><p class="muted">Đang tải thông báo…</p></div></section></div><a href="/tra-cuu.html" class="button outline small lookup-shortcut">Tra cứu vé</a><a sec:authorize="isAnonymous()" href="/login.html" class="text-link">Đăng nhập</a><a sec:authorize="isAuthenticated()" href="/workspace.html" class="text-link">Tài khoản ↗</a></div>
   </div>
 </header>
 <footer th:fragment="footer" class="footer" th:unless="${adminLayout}">
-  <div class="container footer-grid"><div><a href="/" class="brand"><img src="/images/logo.svg" alt=""><span>RVT Ticket</span></a><p>Đặt vé xe khách và tàu / thuyền.<br>Chọn chỗ, xem giá, quản lý hành trình.</p></div><div><strong>Đặt chuyến</strong><a href="/chuyen-di.html?type=XE_KHACH">Vé xe khách</a><a href="/chuyen-di.html?type=TAU_THUYEN">Vé tàu / thuyền</a><a href="/tra-cuu.html">Tra cứu đơn vé</a></div><div><strong>Thông tin</strong><a href="/chinh-sach.html">Hành lý &amp; hủy vé</a><a href="/workspace.html">Khu vực tài khoản</a><a href="/diem-den.html">Điểm đến du lịch</a><a href="/tuyen-tau.html">Tuyến tàu &amp; cảng biển</a><a href="/huong-dan.html">Hướng dẫn &amp; hỗ trợ</a><a href="/bao-mat.html">Quyền riêng tư</a><a href="/nguon-anh.html">Nguồn ảnh</a></div></div>
+  <div class="container footer-grid"><div><a href="/" class="brand"><img th:src="@{/images/logo.svg}" alt=""><span>RVT Ticket</span></a><p>Đặt vé xe khách và tàu / thuyền.<br>Chọn chỗ, xem giá, quản lý hành trình.</p></div><div><strong>Đặt chuyến</strong><a href="/chuyen-di.html?type=XE_KHACH">Vé xe khách</a><a href="/chuyen-di.html?type=TAU_THUYEN">Vé tàu / thuyền</a><a href="/tra-cuu.html">Tra cứu đơn vé</a></div><div><strong>Thông tin</strong><a href="/chinh-sach.html">Hành lý &amp; hủy vé</a><a href="/workspace.html">Khu vực tài khoản</a><a href="/diem-den.html">Điểm đến du lịch</a><a href="/tuyen-tau.html">Tuyến tàu &amp; cảng biển</a><a href="/huong-dan.html">Hướng dẫn &amp; hỗ trợ</a><a href="/bao-mat.html">Quyền riêng tư</a><a href="/nguon-anh.html">Nguồn ảnh</a></div></div>
   <div class="container footer-bottom"><span>© 2026 RVT Ticket</span><span>Xe khách &amp; tàu / thuyền</span></div>
 </footer>
 <div th:fragment="messages"><div role="alert" class="alert error" data-popup="error" th:if="${error}" th:text="${error}"></div><div role="status" class="alert success" data-popup="success" th:if="${message}" th:text="${message}"></div></div>

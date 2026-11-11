@@ -145,20 +145,31 @@ if (places && track && !reduceMotion && matchMedia('(min-width: 1001px)').matche
 
 /* ---------------- Cảnh 3D ---------------- */
 const canvas = document.querySelector('[data-scene]');
-if (canvas && hero) startScene(canvas, hero).catch(() => hero.classList.add('no-webgl'));
+// Máy yếu / tiết kiệm dữ liệu / giảm chuyển động: dùng ảnh tĩnh, không tải three.js.
+const lowEnd = reduceMotion || navigator.connection?.saveData
+  || (navigator.deviceMemory && navigator.deviceMemory <= 2) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2);
+if (canvas && hero) {
+  if (lowEnd) hero.classList.add('no-webgl');
+  else {
+    // Tải cảnh 3D khi trang đã hiển thị và trình duyệt rảnh, không chặn thao tác đầu tiên.
+    const go = () => startScene(canvas, hero).catch(() => hero.classList.add('no-webgl'));
+    const idle = () => (window.requestIdleCallback ? requestIdleCallback(go, { timeout: 2500 }) : setTimeout(go, 300));
+    if (document.readyState === 'complete') idle(); else addEventListener('load', idle, { once: true });
+  }
+}
 
 async function startScene(canvas, hero) {
   const probe = document.createElement('canvas');
   if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) throw new Error('no webgl');
-  const THREE = await import('/vendor/three.module.min.js');
+  const THREE = await import(canvas.dataset.three || '/vendor/three.module.min.js'); // URL có mã phiên bản -> trình duyệt lưu lâu dài
   const small = innerWidth < 800;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !small, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.5 : 1.75));
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !small && devicePixelRatio < 1.5, alpha: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.25 : 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
 
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog('#dce8e7', 90, 260);
@@ -168,7 +179,7 @@ async function startScene(canvas, hero) {
   scene.add(new THREE.HemisphereLight('#eef6f3', '#5f7458', 1.3));
   const sun = new THREE.DirectionalLight('#fff6e6', 2.3);
   sun.position.set(-38, 52, 26); sun.castShadow = true;
-  sun.shadow.mapSize.set(small ? 1024 : 2048, small ? 1024 : 2048);
+  sun.shadow.mapSize.set(small ? 512 : 1024, small ? 512 : 1024);
   Object.assign(sun.shadow.camera, { left: -70, right: 70, top: 60, bottom: -60, near: 1, far: 200 });
   sun.shadow.bias = -0.0006;
   scene.add(sun);
@@ -396,7 +407,7 @@ async function startScene(canvas, hero) {
       const x = seaBase[i * 3], z = seaBase[i * 3 + 2];
       seaPos.setY(i, Math.sin(x * 0.28 + t * 1.1) * 0.16 + Math.cos(z * 0.33 + t * 0.9) * 0.12);
     }
-    seaPos.needsUpdate = true; seaGeo.computeVertexNormals();
+    seaPos.needsUpdate = true; // flatShading: pháp tuyến tính trong shader, không cần computeVertexNormals mỗi khung
     for (const c of clouds) { c.position.x += c.userData.v * dt; if (c.position.x > 110) c.position.x = -110; }
     lamp.material.emissiveIntensity = 0.6 + 0.8 * Math.max(0, Math.sin(t * 2.2));
     beam.intensity = 3 + 5 * Math.max(0, Math.sin(t * 2.2));
@@ -409,8 +420,11 @@ async function startScene(canvas, hero) {
     camera.position.set(Math.sin(ang) * r, base.y - scrollP * 5 + sy * 2.5, Math.cos(ang) * r);
     camera.lookAt(fwd.copy(target).setY(target.y + scrollP * 2));
   }
+  // Giới hạn ~30 khung/giây: chuyển động chậm nên mắt khó thấy khác, CPU/GPU giảm khoảng một nửa.
+  const FRAME_MS = 1000 / 30;
   function frame(now) {
     if (!visible || document.hidden) return;
+    if (now - last < FRAME_MS - 1) { requestAnimationFrame(frame); return; }
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     update(dt); place(); renderer.render(scene, camera);
     requestAnimationFrame(frame);

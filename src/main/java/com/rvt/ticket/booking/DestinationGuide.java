@@ -8,7 +8,8 @@ public final class DestinationGuide {
     private DestinationGuide() {}
     public record Destination(String slug,String name,String region,String blurb,String type,String to,String note,
                               String author,String license,String licenseUrl,String source) {
-        public String image() { return "/images/places/"+slug+".jpg"; }
+        public String image() { return "/images/places/"+slug+"-960.webp"; }
+        public String imageSmall() { return "/images/places/"+slug+"-480.webp"; }
         public String typeLabel() { return "TAU_THUYEN".equals(type)?"Tàu cao tốc":"Xe khách"; }
     }
     public static final List<Destination> ALL = List.of(

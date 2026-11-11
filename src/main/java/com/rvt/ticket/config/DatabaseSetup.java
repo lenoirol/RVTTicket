@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.List;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
@@ -25,24 +26,24 @@ public class DatabaseSetup implements ApplicationRunner {
     public DatabaseSetup(JdbcTemplate db,TicketService tickets,com.rvt.ticket.booking.PlaceService places,com.rvt.ticket.booking.FleetService fleet,com.rvt.ticket.booking.AdminIdentityService admins,com.rvt.ticket.booking.LegacyOrderService legacy) { this.db=db;this.tickets=tickets;this.places=places;this.fleet=fleet;this.admins=admins;this.legacy=legacy; }
     @Override @Transactional(rollbackFor = Exception.class)
     public void run(ApplicationArguments args) throws Exception {
-        db.execute(new ClassPathResource("db/migration/V2__orders_and_layout.sql").getContentAsString(StandardCharsets.UTF_8));
-        db.execute(new ClassPathResource("db/migration/V3__operations.sql").getContentAsString(StandardCharsets.UTF_8));
-        db.execute(new ClassPathResource("db/migration/V4__fleet_and_places.sql").getContentAsString(StandardCharsets.UTF_8));
-        db.execute(new ClassPathResource("db/migration/V5__admin_workspace.sql").getContentAsString(StandardCharsets.UTF_8));
-        db.execute(new ClassPathResource("db/migration/V6__rvt_balance_and_passengers.sql").getContentAsString(StandardCharsets.UTF_8));
-        db.execute(new ClassPathResource("db/migration/V7__product_workflows.sql").getContentAsString(StandardCharsets.UTF_8));
-        db.execute(new ClassPathResource("db/migration/V8__passenger_profile.sql").getContentAsString(StandardCharsets.UTF_8));
-        db.execute(new ClassPathResource("db/migration/V9__vnpay_sandbox.sql").getContentAsString(StandardCharsets.UTF_8));
-        db.execute(new ClassPathResource("db/migration/V10__operational_integrity.sql").getContentAsString(StandardCharsets.UTF_8));
-        runScript(new ClassPathResource("db/migration/V11__appointments_roles.sql").getContentAsString(StandardCharsets.UTF_8));
+        // Migration chỉ chạy khi nội dung các file (hoặc danh mục địa điểm) thay đổi so với lần trước,
+        // để lần khởi động sau (vd. Render "thức dậy") không giữ khóa lược đồ và trả trang nhanh hơn.
+        String fingerprint=fingerprint();
+        db.execute("IF OBJECT_ID(N'dbo.TrangThaiMigration',N'U') IS NULL CREATE TABLE dbo.TrangThaiMigration(Id INT NOT NULL CONSTRAINT PK_TrangThaiMigration PRIMARY KEY,DauVan CHAR(64) NOT NULL,CapNhatLuc DATETIME2(0) NOT NULL CONSTRAINT DF_TrangThaiMigration_Luc DEFAULT SYSUTCDATETIME())");
+        boolean changed=!db.queryForList("SELECT DauVan FROM dbo.TrangThaiMigration WHERE Id=1",String.class).contains(fingerprint);
+        if(changed){
+            for(String file:EXECUTE_SCRIPTS)db.execute(script(file));
+            for(String file:BATCH_SCRIPTS)runScript(script(file));
+        }
         legacy.importAll();
         admins.seed();
-        places.seed();
+        if(changed)places.seed(); else places.linkTrips();
         fleet.seed();
         tickets.closeInvalidTrips();
         seedSeaRoutes();
         tickets.closeSupersededReferenceTrips();
         // Initial reference schedules are reviewed by an administrator before any new sales.
+        if(changed)db.update("MERGE dbo.TrangThaiMigration t USING (SELECT 1 AS Id) s ON t.Id=s.Id WHEN MATCHED THEN UPDATE SET DauVan=?,CapNhatLuc=SYSUTCDATETIME() WHEN NOT MATCHED THEN INSERT(Id,DauVan) VALUES(1,?);",fingerprint,fingerprint);
         if(db.queryForObject("SELECT COUNT(*) FROM dbo.ChuyenDi WHERE MaChuyen LIKE 'RVT-DEMO-%'",Integer.class)>0) return;
         LocalDate start=tickets.databaseNow().plusHours(7).toLocalDate();
         for(int day=0;day<7;day++) {
@@ -51,6 +52,17 @@ public class DatabaseSetup implements ApplicationRunner {
             seed(start.plusDays(day),day,"TAU_THUYEN","Rạch Giá","Phú Quốc","RVT Sea Express",10,3,40,350000,false);
             seed(start.plusDays(day),day,"TAU_THUYEN","Vũng Tàu","Côn Đảo","RVT Ocean",8,4,40,790000,false);
         }
+    }
+    private static final List<String> EXECUTE_SCRIPTS=List.of("V2__orders_and_layout.sql","V3__operations.sql","V4__fleet_and_places.sql","V5__admin_workspace.sql",
+        "V6__rvt_balance_and_passengers.sql","V7__product_workflows.sql","V8__passenger_profile.sql","V9__vnpay_sandbox.sql","V10__operational_integrity.sql");
+    private static final List<String> BATCH_SCRIPTS=List.of("V11__appointments_roles.sql","V12__search_index.sql");
+    private static String script(String file) throws java.io.IOException {return new ClassPathResource("db/migration/"+file).getContentAsString(StandardCharsets.UTF_8);}
+    private static String fingerprint() throws Exception {
+        var digest=java.security.MessageDigest.getInstance("SHA-256");
+        for(String file:EXECUTE_SCRIPTS)digest.update(script(file).getBytes(StandardCharsets.UTF_8));
+        for(String file:BATCH_SCRIPTS)digest.update(script(file).getBytes(StandardCharsets.UTF_8));
+        digest.update(new ClassPathResource("data/vietnam-places.tsv").getContentAsByteArray());
+        return java.util.HexFormat.of().formatHex(digest.digest());
     }
     /** Chạy cả lô T-SQL và duyệt hết kết quả, để lỗi ở câu lệnh sau không bị JDBC bỏ qua im lặng. */
     private void runScript(String sql) {

@@ -20,7 +20,11 @@ public class TicketService {
     public TicketService(JdbcTemplate db,PlaceService places,FleetService fleet,WalletService wallet,NotificationService notifications,LegacyOrderService legacy,TicketStrategyRegistry strategies) { this.db=db;this.places=places;this.fleet=fleet;this.wallet=wallet;this.notifications=notifications;this.legacy=legacy;this.strategies=strategies; }
 
     /** Số liệu thật cho trang chủ: chuyến mở bán 7 ngày tới, số tuyến, tỉnh và địa điểm. */
-    public Map<String,Object> homeStats() {
+    /** Trang chủ: số liệu tổng quan lưu 60 giây, bảng giờ 30 giây (chỉ hiển thị; đặt chỗ luôn đọc trực tiếp DB). */
+    private final TtlCache homeStatsCache=new TtlCache(java.time.Duration.ofSeconds(60));
+    private final TtlCache departuresCache=new TtlCache(java.time.Duration.ofSeconds(30));
+    public Map<String,Object> homeStats() {return homeStatsCache.get("stats",this::loadHomeStats);}
+    private Map<String,Object> loadHomeStats() {
         return db.queryForMap("""
             SELECT (SELECT COUNT(*) FROM dbo.ChuyenDi WHERE TrangThai='MO_BAN' AND KhoiHanh>SYSUTCDATETIME() AND KhoiHanh<DATEADD(DAY,7,SYSUTCDATETIME())) AS SoChuyen,
                    (SELECT COUNT(*) FROM (SELECT DISTINCT NoiDi,NoiDen FROM dbo.ChuyenDi WHERE TrangThai='MO_BAN' AND KhoiHanh>SYSUTCDATETIME()) r) AS SoTuyen,
@@ -29,7 +33,8 @@ public class TicketService {
             """);
     }
     /** Các chuyến sắp chạy cho bảng giờ khởi hành ở trang chủ (giờ Việt Nam). */
-    public List<Map<String,Object>> nextDepartures(int count) {
+    public List<Map<String,Object>> nextDepartures(int count) {return departuresCache.get(count,()->loadNextDepartures(count));}
+    private List<Map<String,Object>> loadNextDepartures(int count) {
         // Mỗi mốc giờ lấy một chuyến để bảng không lặp lại cùng một giờ.
         return db.queryForList("SELECT TOP (?) * FROM (SELECT c.ChuyenDiID,c.LoaiVe,c.NoiDi,c.NoiDen,c.DonViVanChuyen,c.GiaCoBan,DATEADD(HOUR,7,c.KhoiHanh) AS GioDi,"
             +"ROW_NUMBER() OVER(PARTITION BY c.KhoiHanh ORDER BY CASE WHEN c.LoaiVe='TAU_THUYEN' THEN 0 ELSE 1 END,c.ChuyenDiID) AS Thu "

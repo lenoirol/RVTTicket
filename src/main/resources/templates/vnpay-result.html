@@ -10,4 +10,4 @@
 <th:block th:case="*"><h1>Chưa xác minh được kết quả.</h1><p>Đường dẫn kết quả không hợp lệ hoặc thông tin giao dịch không khớp. Hãy xem trạng thái đơn trong tài khoản; không thanh toán lại chỉ vì thông báo này.</p></th:block>
 <p th:if="${result.containsKey('reference')}" class="payment-reference">Mã tham chiếu: <code th:text="${result.reference}"></code></p>
 <a th:if="${orderUrl!=null}" th:href="@{${orderUrl}}" class="button">Xem đơn vé</a><a th:unless="${orderUrl!=null}" href="/tai-khoan.html" class="button">Mở tài khoản</a>
-</section></main><script src="/js/vnpay-result.js" defer></script><footer th:replace="~{fragments :: footer}"></footer></body></html>
+</section></main><script th:src="@{/js/vnpay-result.js}" defer></script><footer th:replace="~{fragments :: footer}"></footer></body></html>

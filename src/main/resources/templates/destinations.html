@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Điểm đến du lịch')}"></head><body>
 <header th:replace="~{fragments :: header('places')}"></header>
-<link rel="stylesheet" href="/css/places.css">
+<link rel="stylesheet" th:href="@{/css/places.css}">
 <main id="main-content" class="container page pl-page">
   <div class="pl-intro">
     <h1 class="page-title">Điểm đến</h1>
@@ -13,7 +13,7 @@
     <div class="pl-grid">
       <article class="pl-card" th:each="d,it:${r.value}" th:classappend="${it.first}?'pl-wide'">
         <a class="pl-photo" th:href="@{/chuyen-di(type=${d.type},to=${d.to})}" th:aria-label="'Tìm chuyến đến '+${d.name}">
-          <img th:src="${d.image}" th:alt="${d.name}" th:attr="loading=${it.first and r.key=='Miền Bắc'}?'eager':'lazy'" width="1400" height="933">
+          <img th:src="@{${d.image}}" th:srcset="@{${d.imageSmall}}+' 480w, '+@{${d.image}}+' 960w'" sizes="(min-width: 900px) 40vw, 92vw" th:alt="${d.name}" th:attr="loading=${it.first and r.key=='Miền Bắc'}?'eager':'lazy'" width="960" height="640">
         </a>
         <div class="pl-body">
           <h3 th:text="${d.name}"></h3>
