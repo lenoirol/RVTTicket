@@ -1,0 +1,27 @@
+/* Trang Điểm đến: trang đọc yên tĩnh, ảnh lớn, không hiệu ứng trang trí. */
+.pl-intro{max-width:760px;margin-bottom:24px}
+.pl-lead{font-size:18px;line-height:1.6;color:var(--ink-2);max-width:62ch}
+.pl-jump{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
+.pl-jump a{padding:8px 16px;border:1.5px solid var(--ink);border-radius:999px;font-weight:600;font-size:14px}
+.pl-jump a:hover{background:var(--ink);color:var(--paper)}
+.pl-region{padding-top:48px;scroll-margin-top:80px}
+.pl-region h2{font-size:clamp(40px,4.6vw,60px);margin:0 0 22px;padding-bottom:12px;border-bottom:2px solid var(--ink)}
+.pl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:34px 22px}
+.pl-card{display:flex;flex-direction:column;min-width:0}
+.pl-photo{display:block;border-radius:14px;overflow:hidden;aspect-ratio:3/2;background:var(--paper-2)}
+.pl-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.pl-photo:focus-visible{outline-offset:3px}
+.pl-body{padding-top:14px;display:flex;flex-direction:column;align-items:flex-start;flex:1}
+.pl-body h3{font-size:32px;margin:0 0 6px;line-height:1}
+.pl-body p{margin:0 0 16px;font-size:14.5px;line-height:1.55;max-width:46ch;flex:1}
+.pl-boat{background:var(--ink)}
+.pl-boat:hover{background:#000}
+/* Ảnh mở đầu mỗi vùng: chiếm 2/3 chiều ngang, chữ đặt bên cạnh */
+.pl-wide{grid-column:1/-1;display:grid;grid-template-columns:2fr 1fr;gap:28px;align-items:end}
+.pl-wide .pl-photo{aspect-ratio:16/9}
+.pl-wide .pl-body{padding:0 0 6px}
+.pl-wide h3{font-size:clamp(48px,5vw,72px)}
+.pl-wide p{font-size:17px}
+.pl-credit{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px}
+@media(max-width:1000px){.pl-grid{grid-template-columns:1fr 1fr}.pl-wide{grid-template-columns:1fr;gap:14px}}
+@media(max-width:600px){.pl-grid{grid-template-columns:1fr;gap:30px}.pl-body h3{font-size:30px}.pl-wide h3{font-size:44px}}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(title)">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title th:text="${title} + ' · RVT Ticket'">RVT Ticket</title>
+  <link rel="icon" href="/images/logo.svg"><link rel="stylesheet" href="/css/fonts.css"><link rel="stylesheet" href="/css/fonts-web.css"><link rel="preload" href="/fonts/web/barlow-condensed-vietnamese-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/app.css"><link rel="stylesheet" href="/css/experience.css"><link rel="stylesheet" href="/css/motion.css">
+  <link rel="stylesheet" href="/css/product.css"><script type="module" src="/js/product.js"></script>
+  <link rel="stylesheet" href="/css/destination-carousel.css"><script type="module" src="/js/destination-carousel.js"></script>
+  <link th:if="${adminLayout}" rel="stylesheet" href="/css/admin.css">
+  <script th:if="${adminLayout}" type="module" src="/js/admin.js"></script>
+  <script th:inline="javascript">window.savedPassengers = /*[[${booking != null ? booking.passengers : null}]]*/ null; window.fieldErrors = /*[[${fieldErrors}]]*/ {};</script>
+  <script th:if="${passengerProfile!=null}" th:inline="javascript">window.passengerProfile = /*[[${passengerProfile}]]*/ {};</script>
+  <meta name="csrf-token" th:content="${_csrf.token}"><meta name="csrf-header" th:content="${_csrf.headerName}"><link rel="stylesheet" href="/css/rvt-balance.css"><link rel="stylesheet" href="/css/theme.css"><script type="module" src="/js/notifications.js"></script><script type="module" src="/js/app.js"></script>
+</head>
+<body>
+<header th:fragment="header(active)" th:class="${adminLayout==true?'operator-header':'header'}">
+  <a href="#main-content" class="skip-link">Bỏ qua điều hướng</a>
+  <th:block th:if="${adminLayout}">
+    <aside class="operator-sidebar" id="operator-navigation"><a href="/workspace.html" class="brand"><img src="/images/logo.svg" alt=""><span>RVT Ticket<small>Quản trị vận hành</small></span></a>
+      <nav aria-label="Quản trị RVT Ticket"><small class="operator-nav-heading">Điều hành</small>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin.html" th:classappend="${adminPath=='/admin'}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>Tổng quan</a>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin/chuyen-di.html" th:classappend="${#strings.startsWith(adminPath,'/admin/chuyen-di')}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v13H5zM5 10h14M8 20v-3m8 3v-3M8 14h1m6 0h1"/></svg>Chuyến đi</a>
+        <a href="/admin/don-ve.html" th:classappend="${#strings.startsWith(adminPath,'/admin/don-ve')||adminPath=='/staff'||#strings.startsWith(adminPath,'/staff/don/')}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4zM15 5v14"/></svg>Đơn vé</a>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin/vnpay.html" th:classappend="${adminPath=='/admin/vnpay'}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 10h18M6 15h4"/></svg>Giao dịch VNPay</a>
+        <a href="/admin/kiem-ve.html" th:classappend="${#strings.contains(adminPath,'kiem-ve')}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V3h5m8 0h5v5M3 16v5h5m8 0h5v-5M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7zm7 0h3v3h-3z"/></svg>Kiểm tra QR</a>
+        <a href="/admin/lich-hen.html" th:classappend="${#strings.startsWith(adminPath,'/admin/lich-hen')}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v16H3zM3 10h18M8 3v4m8-4v4"/></svg>Lịch hẹn tư vấn</a>
+        <a href="/admin/ho-tro.html" th:classappend="${#strings.startsWith(adminPath,'/admin/ho-tro')}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v14H8l-5 4zM7 7h10M7 11h7"/></svg>Hỗ trợ khách hàng</a>
+        <small class="operator-nav-heading">Dữ liệu &amp; báo cáo</small>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin/phuong-tien.html" th:classappend="${#strings.startsWith(adminPath,'/admin/phuong-tien')}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16V7h16v9M2 16h20M7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4m10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4M8 7v5m4-5v5m4-5v5"/></svg>Phương tiện</a>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin/dia-diem.html" th:classappend="${#strings.startsWith(adminPath,'/admin/dia-diem')}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0z"/><circle cx="12" cy="10" r="2"/></svg>Địa điểm</a>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin/khach-hang.html" th:classappend="${#strings.startsWith(adminPath,'/admin/khach-hang')}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg>Khách hàng</a>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin/thong-ke.html" th:classappend="${#strings.startsWith(adminPath,'/admin/thong-ke')}?'active'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M8 16v-5m5 5V7m5 9V4"/></svg>Báo cáo</a>
+        <small class="operator-nav-heading">Thiết lập</small>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin/chinh-sach.html" th:classappend="${#strings.startsWith(adminPath,'/admin/chinh-sach')}?'active'">Chính sách giá &amp; hành lý</a>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin/nhat-ky.html" th:classappend="${#strings.startsWith(adminPath,'/admin/nhat-ky')}?'active'">Nhật ký thao tác</a>
+        <a href="/admin/tai-khoan.html" th:classappend="${#strings.startsWith(adminPath,'/admin/tai-khoan')}?'active'">Tài khoản &amp; bảo mật</a>
+      </nav><p class="operator-demo"><span class="dot"></span>RVT Ticket · Quản trị vận hành</p>
+    </aside>
+    <div class="operator-topbar"><div><button type="button" class="operator-menu button outline small" aria-controls="operator-navigation" aria-expanded="false" id="operator-menu">Menu</button><span class="operator-context">Khu vực quản trị</span></div><div class="admin-actions"><a href="/" class="text-link">Xem website ↗</a><a href="/admin/tai-khoan.html" class="operator-user"><span class="operator-avatar">A</span><span th:text="${adminName}"></span></a><form th:action="@{/logout}" method="post"><button class="button outline small">Đăng xuất</button></form></div></div>
+    <button type="button" class="operator-overlay" id="operator-overlay" aria-label="Đóng menu" hidden></button>
+  </th:block>
+  <div class="container nav" th:unless="${adminLayout}">
+    <a href="/" class="brand" aria-label="RVT Ticket — Trang chủ"><img src="/images/logo.svg" alt=""><span>RVT<span class="brand-light"> Ticket</span><small>Xe khách &amp; tàu / thuyền</small></span></a>
+    <nav aria-label="Điều hướng chính"><a href="/" th:classappend="${active=='home'}?'active'">Trang chủ</a><a href="/chuyen-di.html?type=XE_KHACH" th:classappend="${active=='bus'}?'active'">Xe khách</a><a href="/chuyen-di.html?type=TAU_THUYEN" th:classappend="${active=='boat'}?'active'">Tàu / thuyền</a><a href="/diem-den.html" th:classappend="${active=='places'}?'active'">Điểm đến</a><a href="/lich-hen.html" th:classappend="${active=='appointment'}?'active'">Tư vấn</a><a href="/chinh-sach.html" th:classappend="${active=='policy'}?'active'">Chính sách</a></nav>
+    <div class="nav-actions"><div sec:authorize="hasRole('CUSTOMER')" class="notification-hub"><button type="button" id="notification-toggle" class="notification-toggle" aria-expanded="false" aria-controls="notification-panel" aria-label="Thông báo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0v5l-2 3h16l-2-3zM9 20h6"/></svg><span id="notification-count" hidden>0</span></button><section id="notification-panel" class="notification-panel" hidden aria-label="Thông báo của bạn"><h3>Thông báo</h3><div id="notification-items"><p class="muted">Đang tải thông báo…</p></div></section></div><a href="/tra-cuu.html" class="button outline small lookup-shortcut">Tra cứu vé</a><a sec:authorize="isAnonymous()" href="/login.html" class="text-link">Đăng nhập</a><a sec:authorize="isAuthenticated()" href="/workspace.html" class="text-link">Tài khoản ↗</a></div>
+  </div>
+</header>
+<footer th:fragment="footer" class="footer" th:unless="${adminLayout}">
+  <div class="container footer-grid"><div><a href="/" class="brand"><img src="/images/logo.svg" alt=""><span>RVT Ticket</span></a><p>Đặt vé xe khách và tàu / thuyền.<br>Chọn chỗ, xem giá, quản lý hành trình.</p></div><div><strong>Đặt chuyến</strong><a href="/chuyen-di.html?type=XE_KHACH">Vé xe khách</a><a href="/chuyen-di.html?type=TAU_THUYEN">Vé tàu / thuyền</a><a href="/tra-cuu.html">Tra cứu đơn vé</a></div><div><strong>Thông tin</strong><a href="/chinh-sach.html">Hành lý &amp; hủy vé</a><a href="/workspace.html">Khu vực tài khoản</a><a href="/diem-den.html">Điểm đến du lịch</a><a href="/tuyen-tau.html">Tuyến tàu &amp; cảng biển</a><a href="/huong-dan.html">Hướng dẫn &amp; hỗ trợ</a><a href="/bao-mat.html">Quyền riêng tư</a><a href="/nguon-anh.html">Nguồn ảnh</a></div></div>
+  <div class="container footer-bottom"><span>© 2026 RVT Ticket</span><span>Xe khách &amp; tàu / thuyền</span></div>
+</footer>
+<div th:fragment="messages"><div role="alert" class="alert error" data-popup="error" th:if="${error}" th:text="${error}"></div><div role="status" class="alert success" data-popup="success" th:if="${message}" th:text="${message}"></div></div>
+<small th:fragment="fieldError(key)" class="field-error" th:if="${fieldErrors.containsKey(key)}" th:id="'field-error-'+${key}" th:text="${fieldErrors[key]}"></small>
+<span th:fragment="status(value)" class="status" th:classappend="${value=='DA_THANH_TOAN'||value=='DA_SU_DUNG'}?'paid'" th:switch="${value}">
+  <span th:case="'GIU_CHO'">Chờ thanh toán</span><span th:case="'DA_THANH_TOAN'">Đã thanh toán</span><span th:case="'DA_SU_DUNG'">Đã sử dụng</span><span th:case="'DA_HUY'">Đã hủy</span><span th:case="'HET_HAN'">Hết hạn</span><span th:case="*" th:text="${value}"></span>
+</span>
+<nav th:fragment="workspace" class="workspace-nav" aria-label="Điều hành">
+  <a sec:authorize="hasRole('ADMIN')" href="/admin.html">Tổng quan &amp; chuyến đi</a><a sec:authorize="hasRole('ADMIN')" href="/admin/phuong-tien.html">Phương tiện &amp; sơ đồ</a><a sec:authorize="hasRole('ADMIN')" href="/admin/dia-diem.html">Địa điểm</a><a sec:authorize="hasRole('ADMIN')" href="/admin/thong-ke.html">Thống kê</a><a href="/admin/don-ve.html">Xử lý đơn vé</a><a href="/admin/kiem-ve.html">Quét QR vé</a><a sec:authorize="hasRole('ADMIN')" href="/admin/chinh-sach.html">Chính sách giá &amp; hành lý</a>
+</nav>
+<nav th:fragment="customerNav(active)" class="customer-nav" aria-label="Tài khoản khách hàng"><a href="/tai-khoan.html" th:classappend="${active=='tickets'}?'active'">Vé của tôi</a><a href="/tai-khoan/so-du.html" th:classappend="${active=='wallet'}?'active'">Số dư RVT</a><a href="/lich-hen.html" th:classappend="${active=='appointment'}?'active'">Lịch hẹn tư vấn</a><a href="/tai-khoan/ho-tro.html" th:classappend="${active=='support'}?'active'">Hỗ trợ</a><a href="/tai-khoan/ho-so.html" th:classappend="${active=='profile'}?'active'">Hồ sơ &amp; bảo mật</a><form th:action="@{/logout}" method="post"><button type="submit">Đăng xuất</button></form></nav>
+<span th:fragment="appointmentStatus(value)" class="status" th:classappend="${value=='DA_XAC_NHAN'||value=='HOAN_THANH'}?'paid'" th:switch="${value}"><span th:case="'MOI'">Chờ xác nhận</span><span th:case="'DA_XAC_NHAN'">Đã xác nhận</span><span th:case="'HOAN_THANH'">Đã tư vấn</span><span th:case="'DA_HUY'">Đã hủy</span><span th:case="*" th:text="${value}"></span></span>
+<span th:fragment="supportStatus(value)" class="status" th:classappend="${value=='DA_GIAI_QUYET'}?'paid'" th:text="${value=='MOI'?'Chờ phản hồi':value=='DANG_XU_LY'?'Đang xử lý':'Đã giải quyết'}"></span>
+<form th:fragment="search" class="search-form" action="/chuyen-di.html" method="get">
+  <label>Phương tiện<select name="type"><option th:if="${type!=null}" value="" th:selected="${type==''}">Tất cả phương tiện</option><option value="XE_KHACH" th:selected="${type==null||type=='XE_KHACH'}">Xe khách</option><option value="TAU_THUYEN" th:selected="${type=='TAU_THUYEN'}">Tàu / thuyền</option></select></label>
+  <label>Điểm đi<select th:replace="~{fragments :: placeSelect('from','geo-from',${from},false)}"></select></label>
+  <label>Điểm đến<select th:replace="~{fragments :: placeSelect('to','geo-to',${to},false)}"></select></label>
+  <label>Ngày khởi hành<input type="date" name="date" required th:min="${today}" th:value="${date!=null?date:today}"></label>
+  <button class="button orange">Tìm chuyến</button>
+  <button type="button" class="swap-route" data-swap-route aria-label="Đổi điểm đi và điểm đến" title="Đổi chiều hành trình" hidden>⇄</button>
+  <div class="round-trip-row">
+    <label class="round-trip-toggle"><input type="checkbox" name="roundTrip" value="1" data-round-trip th:checked="${returnDate!=null}"> Khứ hồi</label>
+    <label class="return-date" data-return-date th:hidden="${returnDate==null}">Ngày về<input type="date" name="returnDate" th:min="${date!=null?date:today}" th:value="${returnDate}"></label>
+  </div>
+</form>
+<select th:fragment="placeSelect(name,id,value,required)" th:name="${name}" th:id="${id}" th:required="${required}" data-place-select>
+  <option value="" th:text="${required?'Chọn địa điểm':'Tất cả địa điểm'}"></option>
+  <option th:if="${value!=null &amp;&amp; !#strings.isEmpty(value)}" th:value="${value}" th:text="${#strings.startsWith(value,'province:')?'Tỉnh/thành đã chọn':value}" selected></option>
+  <optgroup th:each="group:${placeGroups}" th:label="${group.TenTinh}">
+    <option th:value="'province:'+ ${group.MaTinh}" th:text="'Toàn tỉnh/thành · '+${group.TenTinh}" th:attr="data-aliases=${group.TenCu}" th:if="${!required}" th:selected="${value=='province:'+group.MaTinh}"></option>
+    <option th:each="d:${group.places}" th:value="${d.TenDiem}" th:text="${d.TenDiem}+' · '+${group.TenTinh}" th:attr="data-aliases=${group.TenCu}" th:selected="${value==d.TenDiem}"></option>
+  </optgroup>
+</select>
+</body></html>

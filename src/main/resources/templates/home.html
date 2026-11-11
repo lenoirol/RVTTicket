@@ -1,0 +1,142 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Đặt vé xe khách & tàu thuyền')}"></head><body class="home-page">
+<header th:replace="~{fragments :: header('home')}"></header>
+<link rel="stylesheet" href="/css/home.css">
+<main id="main-content" class="home">
+
+<!-- 1. Mở đầu: cảnh 3D đường đèo ra biển -->
+<section class="hx-hero" data-hero>
+  <div class="hx-sky" aria-hidden="true"><span class="hx-sun"></span></div>
+  <canvas class="hx-scene" data-scene aria-hidden="true"></canvas>
+  <div class="hx-veil" aria-hidden="true"></div>
+  <div class="container hx-hero-inner">
+    <div class="hx-copy">
+      <h1 class="hx-title"><span class="hx-line"><span>Đi đâu cũng</span></span><span class="hx-line"><span>có chuyến.</span></span></h1>
+      <p class="hx-lead">Xe khách liên tỉnh và tàu cao tốc ra đảo. Chọn đúng chiếc ghế mình muốn, giữ chỗ 15 phút để thanh toán, nhận vé có mã QR cho từng hành khách.</p>
+    </div>
+  </div>
+  <div class="container hx-search-wrap">
+    <div class="search-panel hx-search" id="tim-chuyen"><div class="panel-heading"><strong>Bạn muốn đi đâu?</strong><span>Giờ Việt Nam · Giá theo hành khách</span></div><form th:replace="~{fragments :: search}"></form></div>
+  </div>
+</section>
+
+<!-- 2. Bảng giờ khởi hành: dữ liệu thật -->
+<section class="hx-board-section" id="khoi-hanh" th:if="${departures!=null and !#lists.isEmpty(departures)}">
+  <div class="container">
+    <div class="hx-board-head">
+      <div><h2>Sắp khởi hành</h2><p>Những chuyến gần nhất còn bán vé. Bấm vào một dòng để chọn chỗ.</p></div>
+      <div class="hx-clock"><small>Giờ Việt Nam</small><strong data-clock>--:--:--</strong></div>
+    </div>
+    <ol class="hx-board" data-board>
+      <li class="hx-board-labels" aria-hidden="true"><span>Giờ đi</span><span>Hành trình</span><span>Nhà xe · hãng tàu</span><span>Giá từ</span><span></span></li>
+      <li th:each="d,it:${departures}" th:style="'--i:'+${it.index}">
+        <a class="hx-board-row" th:href="@{/dat-ve/{id}(id=${d.ChuyenDiID})}">
+          <span class="hx-time" data-flap th:text="${#dates.format(d.GioDi,'HH:mm')}">00:00</span>
+          <span class="hx-route"><b th:text="${d.NoiDi}"></b><i aria-hidden="true">→</i><b th:text="${d.NoiDen}"></b><small th:text="${(d.LoaiVe=='XE_KHACH'?'Xe khách':'Tàu / thuyền')}+' · '+${#dates.format(d.GioDi,'dd/MM')}"></small></span>
+          <span class="hx-op" th:text="${d.DonViVanChuyen}"></span>
+          <span class="hx-price" th:text="${#numbers.formatDecimal(d.GiaCoBan,0,'POINT',0,'COMMA')}+' ₫'"></span>
+          <span class="hx-go">Chọn chỗ</span>
+        </a>
+      </li>
+    </ol>
+    <a class="text-link hx-board-more" th:href="@{/chuyen-di}">Xem toàn bộ chuyến hôm nay</a>
+  </div>
+</section>
+
+<!-- 3. Con số thật từ hệ thống -->
+<section class="container hx-stats" th:if="${stats!=null}">
+  <div class="hx-stat"><strong data-count th:attr="data-count=${stats.SoChuyen}" th:text="${#numbers.formatInteger(stats.SoChuyen,1,'POINT')}"></strong><span>chuyến đang mở bán trong 7 ngày tới</span></div>
+  <div class="hx-stat"><strong data-count th:attr="data-count=${stats.SoTuyen}" th:text="${#numbers.formatInteger(stats.SoTuyen,1,'POINT')}"></strong><span>tuyến xe và tàu đang chạy</span></div>
+  <div class="hx-stat"><strong data-count th:attr="data-count=${stats.SoTinh}" th:text="${stats.SoTinh}"></strong><span>tỉnh, thành phố trong danh mục</span></div>
+  <div class="hx-stat"><strong data-count th:attr="data-count=${stats.SoDiaDiem}" th:text="${stats.SoDiaDiem}"></strong><span>bến xe, cảng và điểm đến</span></div>
+</section>
+
+<!-- 4. Hai cách lên đường: thẻ nghiêng 3D theo con trỏ -->
+<section class="container hx-modes">
+  <div class="hx-section-head"><h2>Hai cách lên đường</h2><p>Đường bộ xuyên tỉnh hoặc tàu cao tốc ra đảo. Cùng một cách đặt, cùng một tài khoản.</p></div>
+  <div class="hx-mode-grid">
+    <a class="hx-mode hx-mode-bus" data-tilt th:href="@{/chuyen-di(type='XE_KHACH')}">
+      <div class="hx-mode-art" aria-hidden="true">
+        <svg class="hx-layer" style="--d:.2" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice"><path d="M0 150 L70 90 L120 120 L190 60 L260 115 L320 80 L400 130 L400 220 L0 220Z" fill="#c9d6bf"/></svg>
+        <svg class="hx-layer" style="--d:.45" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice"><path d="M0 175 Q100 130 200 160 T400 150 L400 220 L0 220Z" fill="#8fae6a"/></svg>
+        <svg class="hx-layer" style="--d:.7" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice"><path d="M-10 220 Q150 170 410 190 L410 220Z" fill="#3a3a40"/><path d="M40 208 L80 202 M130 197 L170 193 M220 192 L260 191 M310 192 L350 194" stroke="#f4e3b5" stroke-width="3" stroke-linecap="round"/></svg>
+        <svg class="hx-layer hx-vehicle" style="--d:1" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice"><g transform="translate(120 128)"><rect x="0" y="0" width="150" height="52" rx="10" fill="#f6efe2"/><rect x="0" y="34" width="150" height="10" fill="#c62a2f"/><rect x="10" y="8" width="128" height="18" rx="4" fill="#24324f"/><rect x="138" y="10" width="10" height="20" rx="3" fill="#24324f"/><circle cx="32" cy="54" r="10" fill="#1f2433"/><circle cx="118" cy="54" r="10" fill="#1f2433"/><circle cx="32" cy="54" r="4" fill="#cfc6b4"/><circle cx="118" cy="54" r="4" fill="#cfc6b4"/></g></svg>
+      </div>
+      <div class="hx-mode-text"><span class="hx-tag">Đường bộ</span><h3>Xe khách liên tỉnh</h3><p>Ghế ngồi, giường nằm hay limousine. Xem sơ đồ từng tầng và chọn đúng chỗ trước khi trả tiền.</p><span class="hx-link">Tìm chuyến xe</span></div>
+    </a>
+    <a class="hx-mode hx-mode-boat" data-tilt th:href="@{/chuyen-di(type='TAU_THUYEN')}">
+      <div class="hx-mode-art" aria-hidden="true">
+        <svg class="hx-layer" style="--d:.2" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice"><path d="M250 150 Q300 70 360 150Z" fill="#7fa58f"/><rect x="318" y="88" width="9" height="34" fill="#f6efe2"/><rect x="318" y="98" width="9" height="6" fill="#c62a2f"/><path d="M314 88 h17 l-8.5 -10z" fill="#24324f"/></svg>
+        <svg class="hx-layer" style="--d:.45" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice"><path d="M0 150 Q50 140 100 150 T200 150 T300 150 T400 150 L400 220 L0 220Z" fill="#4d9da0"/></svg>
+        <svg class="hx-layer hx-vehicle" style="--d:.8" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice"><g transform="translate(90 120)"><path d="M0 30 L170 30 L150 58 L18 58Z" fill="#f6efe2"/><rect x="0" y="40" width="166" height="6" fill="#0d5c63"/><rect x="40" y="6" width="90" height="24" rx="5" fill="#f6efe2"/><rect x="48" y="12" width="74" height="9" rx="2" fill="#24324f"/><rect x="82" y="-10" width="4" height="16" fill="#24324f"/></g></svg>
+        <svg class="hx-layer" style="--d:1.1" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice"><path d="M0 178 Q50 166 100 178 T200 178 T300 178 T400 178 L400 220 L0 220Z" fill="#0d5c63"/></svg>
+      </div>
+      <div class="hx-mode-text"><span class="hx-tag">Đường biển</span><h3>Tàu cao tốc ra đảo</h3><p>Phú Quốc, Côn Đảo, Phú Quý, Lý Sơn. Chọn chỗ phổ thông hoặc VIP, chuẩn bị đúng giấy tờ cho từng người.</p><span class="hx-link">Tìm chuyến tàu</span></div>
+    </a>
+  </div>
+</section>
+
+<!-- 5. Ba bước: tấm vé 3D lật theo từng bước -->
+<section class="hx-story" data-story>
+  <div class="container hx-story-grid">
+    <div class="hx-ticket-stage" aria-hidden="true">
+      <div class="hx-ticket" data-ticket data-step="0">
+        <div class="hx-face hx-front">
+          <div class="hx-ticket-top"><span>RVT Ticket</span><span>Vé xe khách</span></div>
+          <div class="hx-ticket-route"><div><small>Từ</small><strong>Hà Nội</strong><span>06:30 · Mỹ Đình</span></div><i>→</i><div><small>Đến</small><strong>Sa Pa</strong><span>13:15 · Bến xe Sa Pa</span></div></div>
+          <div class="hx-ticket-seats"><small>Chọn chỗ</small><div class="hx-mini-seats"><i></i><i></i><i class="off"></i><i></i><i></i><i class="off"></i><i></i><i class="pick"></i><i></i><i></i><i></i><i class="off"></i><i class="off"></i><i></i><i></i><i class="off"></i><i></i><i></i></div><div class="hx-ticket-when"><div><small>Ngày đi</small><b>Thứ 7, 14/11</b></div><div><small>Xe</small><b>Giường nằm 36 chỗ</b></div></div></div>
+          <div class="hx-ticket-foot"><div><small>Hành khách</small><b>Nguyễn Minh Anh</b></div><div><small>Ghế</small><b class="hx-seat-no">A08</b></div><div><small>Giá</small><b>325.000 ₫</b></div></div>
+        </div>
+        <div class="hx-face hx-back">
+          <div class="hx-qr" data-qr></div>
+          <p><b>Đưa mã này cho nhân viên</b><span>Mỗi hành khách một mã · RVT-X023-261114-1</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="hx-story-steps">
+      <h2>Ba bước, một tấm vé</h2>
+      <ol>
+        <li data-step="0"><span class="hx-step-no">01</span><div><h3>Tìm chuyến</h3><p>Chọn điểm đi, điểm đến và ngày. Lọc theo khung giờ, sắp xếp theo giá hoặc thời gian đi. Đi khứ hồi thì tích ô “Khứ hồi”.</p></div></li>
+        <li data-step="1"><span class="hx-step-no">02</span><div><h3>Chọn chỗ</h3><p>Xem sơ đồ xe hoặc tàu theo từng tầng, chọn ghế cho tối đa 8 người và nhập tên từng hành khách. Chỗ được giữ 15 phút.</p></div></li>
+        <li data-step="2"><span class="hx-step-no">03</span><div><h3>Nhận vé</h3><p>Thanh toán bằng VNPay hoặc số dư RVT. Mỗi hành khách có mã QR riêng để lên xe, xuống tàu.</p></div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Điểm đến: dải ảnh trượt ngang theo cuộn trang -->
+<section class="hx-places" data-places>
+  <div class="hx-places-sticky">
+    <div class="container hx-section-head"><h2>Những nơi nhiều người đặt vé</h2><p>Bấm vào ảnh để xem chuyến đi hôm nay. <a class="text-link" th:href="@{/diem-den}">Xem cả 18 điểm đến</a></p></div>
+    <div class="hx-places-track" data-track>
+      <a class="hx-place" data-tilt th:each="d:${destinations}" th:href="@{/chuyen-di(type=${d.type},to=${d.to})}">
+        <img th:src="${d.image}" th:alt="${d.name}" loading="lazy" width="1400" height="933">
+        <div><small th:text="${d.note!=null?d.note:d.typeLabel}"></small><h3 th:text="${d.name}"></h3><p th:text="${d.blurb}"></p></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 7. Thông tin cần biết -->
+<section class="container hx-info">
+  <article><h3>Ra đảo, chọn cảng trước</h3><p>So sánh tuyến ra Phú Quốc, Côn Đảo, Phú Quý và Lý Sơn; xem giá ECO/VIP, giấy tờ cần mang và giờ có mặt ở cảng.</p><a class="text-link" th:href="@{/tuyen-tau}">Tuyến tàu &amp; cảng biển</a></article>
+  <article><h3>Hủy trước 24 giờ, hoàn đủ</h3><p>Đơn đã thanh toán hủy trước giờ chạy ít nhất 24 giờ được hoàn 100% vào số dư RVT, dùng ngay cho chuyến sau.</p><a class="text-link" th:href="@{/chinh-sach}">Chính sách hành lý &amp; hủy vé</a></article>
+  <article><h3>Đã có vé?</h3><p>Tra cứu bằng mã đơn và số điện thoại để xem vé và trạng thái. Đăng nhập tài khoản chủ đơn để thanh toán hoặc hủy.</p><a class="button outline small" th:href="@{/tra-cuu}">Tra cứu đơn vé</a></article>
+</section>
+
+<section class="container hx-faq">
+  <h2>Hỏi nhanh trước khi đi</h2>
+  <div>
+    <details><summary>Một đơn đặt được bao nhiêu người?</summary><p>Từ 1 đến 8 hành khách. Mỗi người có một chỗ riêng và cần nhập họ tên riêng.</p></details>
+    <details><summary>Cần mang theo giấy tờ gì?</summary><p>Vé tàu cần giấy tờ khớp thông tin đã đặt; trẻ em có thể dùng giấy khai sinh. Nên có mặt ở bến xe trước 30 phút, ở cảng tàu trước 45 phút.</p></details>
+    <details><summary>Vé và thông báo được lưu ở đâu?</summary><p>Đăng nhập rồi mở “Vé của tôi” để xem mã vé, QR và trạng thái. Phản hồi hỗ trợ được lưu trong tài khoản và mục thông báo.</p></details>
+    <details><summary>Có đặt khứ hồi được không?</summary><p>Được. Tích ô “Khứ hồi” ở khung tìm chuyến, chọn chuyến đi rồi chọn chuyến về; mỗi chiều là một đơn và thanh toán riêng.</p></details>
+  </div>
+</section>
+
+<section class="hx-cta">
+  <div class="container"><h2>Chuyến tiếp theo<br>đang chờ bạn.</h2><a class="button orange" href="#tim-chuyen">Tìm chuyến ngay</a></div>
+</section>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+<script type="module" src="/js/home.js"></script>
+</body></html>

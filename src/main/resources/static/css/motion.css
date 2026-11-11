@@ -1,0 +1,31 @@
+/* Motion guides an action; no looping decoration and no delayed booking controls. */
+@media(prefers-reduced-motion:no-preference){
+  html{scroll-behavior:smooth}
+  .button{transition:background-color 160ms ease,border-color 160ms ease,box-shadow 160ms ease,transform 160ms ease}
+  .button:active{transform:translateY(0) scale(.98)}.button:hover{box-shadow:0 5px 14px #18365712}
+  .nav a,.text-link,.workspace-nav a{transition:color 150ms ease,background-color 150ms ease}
+  input,select,textarea{transition:border-color 150ms ease,box-shadow 150ms ease}
+  .trip-card,.destination,.transport{transition:border-color 220ms ease,box-shadow 220ms ease,transform 220ms ease}
+  .trip-card:hover{border-color:#bfcee4;box-shadow:0 8px 25px #173c6410}
+  .destination:hover,.transport:hover{transform:translateY(-3px);box-shadow:0 10px 28px #173c6412}
+  .destination-photo{transition:transform 450ms cubic-bezier(.2,.6,.3,1)}.destination:hover .destination-photo{transform:scale(1.025)}
+  .seat{transition:background-color 150ms ease,color 150ms ease,border-color 150ms ease,box-shadow 150ms ease,transform 150ms ease}
+  .seat:not(:disabled):hover{transform:translateY(-2px)}.seat:not(:disabled):active{transform:scale(.95)}
+  .passenger-enter{animation:passenger-enter 220ms ease both}
+  .alert{animation:notice-enter 220ms ease both}.value-updated{animation:value-update 280ms ease}
+  .confirm-dialog[open]{animation:dialog-enter 200ms cubic-bezier(.2,.7,.3,1) both}.confirm-dialog[open]::backdrop{animation:backdrop-enter 180ms ease both}
+  .trip-details summary span{transition:transform 180ms ease}.trip-details[open] .details-grid{animation:notice-enter 180ms ease}
+  .success-mark path{stroke-dasharray:30;stroke-dashoffset:30;animation:draw-check 450ms 100ms ease forwards}
+  .reveal-ready{opacity:0;transform:translateY(12px);transition:opacity 450ms ease,transform 450ms ease}.reveal-ready.is-visible{opacity:1;transform:none}
+}
+@keyframes passenger-enter{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes notice-enter{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes value-update{50%{color:#e87925;transform:translateY(-2px)}}
+@keyframes dialog-enter{from{opacity:0;transform:translateY(9px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes backdrop-enter{from{opacity:0}to{opacity:1}}
+@keyframes draw-check{to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .reveal-ready{opacity:1!important;transform:none!important}.button:hover,.destination:hover,.transport:hover,.seat:hover{transform:none}
+  .success-mark path{stroke-dashoffset:0}
+}

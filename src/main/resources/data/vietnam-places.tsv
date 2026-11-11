@@ -1,0 +1,36 @@
+# Current province-level names per Resolution 202/2025/QH15; slugs are internal RVT IDs, not administrative codes.
+# province slug | current name | former province aliases | travel destinations (not a list of current administrative city units)
+ha-noi|Hà Nội||Hà Nội;Bến xe Mỹ Đình;Bến xe Giáp Bát;Bến xe Nước Ngầm;Sơn Tây;Ba Vì
+cao-bang|Cao Bằng||Cao Bằng;Thác Bản Giốc;Trùng Khánh;Pác Bó
+tuyen-quang|Tuyên Quang|Hà Giang|Tuyên Quang;Hà Giang;Đồng Văn;Mèo Vạc;Hoàng Su Phì;Na Hang
+lao-cai|Lào Cai|Yên Bái|Lào Cai;Sa Pa;Bắc Hà;Yên Bái;Mù Cang Chải;Nghĩa Lộ
+dien-bien|Điện Biên||Điện Biên Phủ;Mường Lay;Mường Nhé;Tuần Giáo
+lai-chau|Lai Châu||Lai Châu;Tam Đường;Sìn Hồ;Phong Thổ
+son-la|Sơn La||Sơn La;Mộc Châu;Tà Xùa;Mai Sơn
+thai-nguyen|Thái Nguyên|Bắc Kạn|Thái Nguyên;Sông Công;Bắc Kạn;Hồ Ba Bể
+lang-son|Lạng Sơn||Lạng Sơn;Đồng Đăng;Mẫu Sơn;Hữu Lũng
+quang-ninh|Quảng Ninh||Hạ Long;Cẩm Phả;Móng Cái;Uông Bí;Vân Đồn;Cô Tô;Cảng Ao Tiên;Tuần Châu
+bac-ninh|Bắc Ninh|Bắc Giang|Bắc Ninh;Bắc Giang;Từ Sơn;Lục Ngạn;Yên Dũng
+phu-tho|Phú Thọ|Vĩnh Phúc;Hòa Bình|Việt Trì;Đền Hùng;Vĩnh Yên;Tam Đảo;Hòa Bình;Mai Châu
+hai-phong|Hải Phòng|Hải Dương|Hải Phòng;Hải Dương;Đồ Sơn;Cát Bà;Bến Bính;Chí Linh
+hung-yen|Hưng Yên|Thái Bình|Hưng Yên;Thái Bình;Phố Hiến;Văn Giang;Tiền Hải
+ninh-binh|Ninh Bình|Hà Nam;Nam Định|Ninh Bình;Tràng An;Tam Cốc;Phủ Lý;Nam Định;Giao Thủy
+thanh-hoa|Thanh Hóa||Thanh Hóa;Sầm Sơn;Pù Luông;Nghi Sơn;Bỉm Sơn
+nghe-an|Nghệ An||Vinh;Cửa Lò;Con Cuông;Quỳnh Lưu;Diễn Châu
+ha-tinh|Hà Tĩnh||Hà Tĩnh;Hồng Lĩnh;Kỳ Anh;Thiên Cầm
+quang-tri|Quảng Trị|Quảng Bình|Đông Hà;Quảng Trị;Đồng Hới;Phong Nha;Cửa Việt;Cồn Cỏ
+hue|Huế|Thừa Thiên Huế|Huế;Lăng Cô;Thuận An;Phú Bài
+da-nang|Đà Nẵng|Quảng Nam|Đà Nẵng;Hội An;Tam Kỳ;Cù Lao Chàm;Bến Cửa Đại;Bến xe Trung tâm Đà Nẵng
+quang-ngai|Quảng Ngãi|Kon Tum|Quảng Ngãi;Kon Tum;Măng Đen;Lý Sơn;Cảng Sa Kỳ
+gia-lai|Gia Lai|Bình Định|Pleiku;Quy Nhơn;An Nhơn;Kỳ Co;Eo Gió
+dak-lak|Đắk Lắk|Phú Yên|Buôn Ma Thuột;Tuy Hòa;Buôn Hồ;Sông Cầu;Hồ Lắk
+khanh-hoa|Khánh Hòa|Ninh Thuận|Nha Trang;Cam Ranh;Ninh Hòa;Phan Rang–Tháp Chàm;Vĩnh Hy;Cảng Đá Bạc
+lam-dong|Lâm Đồng|Đắk Nông;Bình Thuận|Đà Lạt;Bảo Lộc;Phan Thiết;Mũi Né;Gia Nghĩa;Phú Quý;Cảng Phan Thiết
+dong-nai|Đồng Nai|Bình Phước|Biên Hòa;Long Khánh;Đồng Xoài;Bù Đăng;Cát Tiên
+ho-chi-minh|TP. Hồ Chí Minh|Hồ Chí Minh;Sài Gòn;Bà Rịa - Vũng Tàu;Bình Dương|TP. Hồ Chí Minh;Vũng Tàu;Bà Rịa;Côn Đảo;Thủ Dầu Một;Dĩ An;Bến xe Miền Đông;Bến xe Miền Tây;Bến Bạch Đằng
+tay-ninh|Tây Ninh|Long An|Tây Ninh;Tân An;Núi Bà Đen;Mộc Bài;Đức Hòa
+can-tho|Cần Thơ|Sóc Trăng;Hậu Giang|Cần Thơ;Sóc Trăng;Vị Thanh;Ngã Bảy;Chợ nổi Cái Răng;Cảng Trần Đề
+vinh-long|Vĩnh Long|Bến Tre;Trà Vinh|Vĩnh Long;Bến Tre;Trà Vinh;Cù Lao An Bình;Cồn Phụng
+dong-thap|Đồng Tháp|Tiền Giang|Cao Lãnh;Sa Đéc;Mỹ Tho;Gò Công;Hồng Ngự
+an-giang|An Giang|Kiên Giang|Long Xuyên;Châu Đốc;Rạch Giá;Hà Tiên;Phú Quốc;Nam Du;Hòn Sơn;Cảng Rạch Giá;Cảng Hà Tiên
+ca-mau|Cà Mau|Bạc Liêu|Cà Mau;Bạc Liêu;Năm Căn;Đất Mũi;Hòn Đá Bạc

@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Điểm đến du lịch')}"></head><body>
+<header th:replace="~{fragments :: header('places')}"></header>
+<link rel="stylesheet" href="/css/places.css">
+<main id="main-content" class="container page pl-page">
+  <div class="pl-intro">
+    <h1 class="page-title">Điểm đến</h1>
+    <p class="pl-lead" th:text="${total}+' nơi khách của RVT Ticket hay đi, từ ruộng bậc thang Tây Bắc đến biển đảo phía Nam. Mỗi điểm đến dẫn thẳng tới chuyến xe hoặc tàu đang bán.'"></p>
+    <nav class="pl-jump" aria-label="Chọn vùng"><a th:each="r:${regions}" th:href="'#'+${#strings.replace(#strings.toLowerCase(r.key),' ','-')}" th:text="${r.key}+' ('+${#lists.size(r.value)}+')'"></a></nav>
+  </div>
+
+  <section class="pl-region" th:each="r:${regions}" th:id="${#strings.replace(#strings.toLowerCase(r.key),' ','-')}">
+    <h2 th:text="${r.key}"></h2>
+    <div class="pl-grid">
+      <article class="pl-card" th:each="d,it:${r.value}" th:classappend="${it.first}?'pl-wide'">
+        <a class="pl-photo" th:href="@{/chuyen-di(type=${d.type},to=${d.to})}" th:aria-label="'Tìm chuyến đến '+${d.name}">
+          <img th:src="${d.image}" th:alt="${d.name}" th:attr="loading=${it.first and r.key=='Miền Bắc'}?'eager':'lazy'" width="1400" height="933">
+        </a>
+        <div class="pl-body">
+          <h3 th:text="${d.name}"></h3>
+          <p th:text="${d.blurb}"></p>
+          <a class="button small" th:classappend="${d.type=='TAU_THUYEN'}?'pl-boat'" th:href="@{/chuyen-di(type=${d.type},to=${d.to})}" th:text="${d.note!=null?d.note:(d.type=='TAU_THUYEN'?'Tìm chuyến tàu':'Tìm chuyến xe')}"></a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <p class="pl-credit">Ảnh từ Wikimedia Commons, dùng theo giấy phép Creative Commons hoặc phạm vi công cộng. <a class="text-link" th:href="@{/nguon-anh}">Tác giả và giấy phép từng ảnh</a></p>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body></html>

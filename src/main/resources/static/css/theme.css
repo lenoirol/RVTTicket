@@ -1,0 +1,221 @@
+/* RVT Ticket · giao diện 2026
+   Nạp SAU CÙNG: đổi tông màu, chữ và thành phần dùng chung cho toàn site.
+   Bố cục chức năng (sơ đồ chỗ, form đặt vé, quản trị) vẫn nằm ở các file CSS cũ.
+   Trang chủ có thêm home.css; các trang đặt vé giữ chuyển động tối thiểu. */
+
+:root{
+  /* Lấy từ đường bộ Việt Nam: đá trắng cột cây số, chóp đỏ, mực xanh đen, vạch vàng mặt đường, biển xanh. */
+  --paper:#f1f2ee;
+  --paper-2:#e6e8e2;
+  --card:#ffffff;
+  --ink:#15201c;
+  --ink-2:#38433d;
+  --muted:#65706a;
+  --line:#dce0d8;
+  --line-strong:#c2c8bf;
+  --sea:#0b5d66;
+  --sea-dark:#07464d;
+  --sea-tint:#e0edeb;
+  --signal:#c62a2f;
+  --signal-dark:#a31f24;
+  --sun:#f3b52f;
+  --sun-tint:#fcf0cf;
+  --ok:#2f7a4f;
+  --ok-tint:#e5f1e8;
+  --danger:#b4412f;
+  --danger-tint:#f9e6e0;
+  --display:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;
+  --sans:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --radius:12px;
+  /* biến cũ của app.css trỏ sang bảng màu mới */
+  --blue:var(--sea);--orange:var(--signal);--border:var(--line);--bg:var(--paper);
+}
+
+html{background:var(--paper)}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,select,textarea{font-family:var(--sans)}
+::selection{background:var(--sun);color:var(--ink)}
+:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+
+h1,h2,h3,.page-title{text-wrap:balance;font-family:var(--display);font-weight:700;letter-spacing:0;color:var(--ink)}
+h2{font-size:clamp(30px,3.4vw,40px);line-height:1.05}
+h3{font-size:23px;line-height:1.15;font-weight:600}
+.page-title{font-size:clamp(42px,5.6vw,66px);line-height:.98;margin:8px 0 18px}
+p{color:var(--ink-2)}
+.muted,.small-text{color:var(--muted)}
+hr{border-top-color:var(--line)}
+
+/* Nhãn nhỏ: chữ thường, màu trầm, chỉ để định hướng */
+.eyebrow{display:block;color:var(--muted);font-size:13.5px;letter-spacing:0;font-weight:600;font-family:var(--sans);margin-bottom:6px}
+.eyebrow .dot{display:none}
+
+/* ---------- Header ---------- */
+.header{background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:saturate(1.2) blur(10px);-webkit-backdrop-filter:saturate(1.2) blur(10px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40}
+.nav{height:74px}
+.brand{font-family:var(--display);font-weight:700;font-size:27px;letter-spacing:0;color:var(--ink)}
+.brand .brand-light{font-weight:500}
+.brand img{width:36px;height:36px}
+.brand small{font-family:var(--sans);letter-spacing:0;font-size:11px;color:var(--muted);font-weight:500;line-height:1.2}
+.nav nav{gap:6px;font-size:14px}
+.nav nav a{color:var(--ink-2);padding:8px 14px;border-radius:999px;font-weight:500}
+.nav nav a:hover{color:var(--ink);background:var(--paper-2)}
+.nav nav .active{color:var(--ink);background:var(--paper-2)}
+.nav nav .active:after{display:none}
+.nav-actions .text-link{color:var(--ink)}
+
+/* ---------- Nút ---------- */
+.button{background:var(--sea);color:#fff;border-radius:10px;font-weight:600;letter-spacing:.005em;gap:10px;box-shadow:none}
+.button:hover{background:var(--sea-dark);transform:none;box-shadow:none}
+.button.orange{background:var(--signal);color:#fff}
+.button.orange:hover{background:var(--signal-dark)}
+.button.outline{background:transparent;border:1.5px solid var(--ink);color:var(--ink)}
+.button.outline:hover{background:var(--ink);color:var(--paper)}
+.button.danger{color:var(--danger);border-color:var(--danger)}
+.button.danger:hover{background:var(--danger);color:#fff}
+.text-link{color:var(--sea);font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:color-mix(in srgb,var(--sea) 35%,transparent)}
+.text-link:hover{text-decoration-color:var(--sea)}
+
+/* ---------- Form ---------- */
+label{color:var(--ink-2);font-weight:500}
+label>input:not([type=checkbox]):not([type=radio]),label>select,label>textarea,textarea,.fields input,.fields select{background:var(--card);border:1px solid var(--line-strong);border-radius:9px;color:var(--ink)}
+input:focus,select:focus,textarea:focus{border-color:var(--sea)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--sea) 18%,transparent)!important}
+input::placeholder,textarea::placeholder{color:#98a09a}
+input[type=checkbox],input[type=radio]{accent-color:var(--sea)}
+
+/* ---------- Thẻ, ghi chú, thông báo ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:none}
+.card h2{font-size:24px}
+.notice,.policy-note{background:var(--paper-2);border-left:3px solid var(--sea);border-radius:0 10px 10px 0;color:var(--ink-2);font-size:13px}
+.alert{border-radius:10px;font-weight:500}
+.alert.error{background:var(--danger-tint);color:var(--danger);border-left:3px solid var(--danger)}
+.alert.success{background:var(--ok-tint);color:var(--ok);border-left:3px solid var(--ok)}
+.pill{background:var(--card);border:1px solid var(--line);color:var(--ink-2);letter-spacing:.06em}
+.pill.soft{background:var(--sea-tint);border-color:transparent;color:var(--sea-dark);font-size:10.5px;letter-spacing:.01em;font-weight:600}
+.status{background:var(--sun-tint);color:#8a5a0c;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:600}
+.status.paid{background:var(--ok-tint);color:var(--ok)}
+.empty{background:var(--card);border:1.5px dashed var(--line-strong);border-radius:var(--radius)}
+
+/* ---------- Bảng ---------- */
+table{font-size:13px}
+th{color:var(--muted);font-weight:600;font-size:12.5px;letter-spacing:0;border-bottom:1.5px solid var(--line-strong)}
+td{border-bottom:1px solid var(--line)}
+tbody tr:hover td{background:color-mix(in srgb,var(--paper-2) 55%,transparent)}
+
+/* ---------- Ô tìm chuyến ---------- */
+.search-panel{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 0 var(--line),0 18px 40px -24px #15201c30}
+.search-panel.compact{box-shadow:none}
+.panel-heading strong{font-family:var(--display);font-size:26px;font-weight:700}
+.search-form label{color:var(--muted);letter-spacing:0;font-size:12.5px;font-weight:600}
+.search-form select,.search-form input{background:transparent!important;border-bottom:1.5px solid var(--line-strong)!important;color:var(--ink);font-size:15px!important;font-weight:500}
+.search-form .place-picker>input{border-bottom:1.5px solid var(--line-strong)!important}
+.search-form input[type=date]{border:1.5px solid var(--line-strong)!important;border-radius:9px!important;padding:10px 12px!important}
+.swap-route{background:var(--card)!important;border-color:var(--line-strong)!important;color:var(--sea)!important}
+.swap-route:hover{background:var(--sea-tint)!important}
+.search-form .round-trip-toggle{color:var(--ink);letter-spacing:0;font-size:13px}
+.place-options{background:var(--card);border-color:var(--line)}
+.place-option[aria-selected=true],.place-option:hover{background:var(--sea-tint)}
+
+/* ---------- Trang tìm chuyến: yên tĩnh, dễ quét ---------- */
+.filter-bar{background:var(--card);border:1px solid var(--line);border-radius:var(--radius)}
+.date-chip{background:var(--card);border:1px solid var(--line);border-radius:10px;color:var(--ink)}
+.date-chip:hover{border-color:var(--line-strong)}
+.date-chip.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.date-chip.active small,.date-chip.active strong{color:var(--paper)}
+.results-heading strong{font-family:var(--display);font-size:26px;font-weight:700}
+.trip-card{background:var(--card);border:1px solid var(--line);border-radius:14px}
+.trip-card:hover{border-color:var(--line-strong);box-shadow:none;transform:none}
+.vehicle-icon{background:var(--paper-2);color:var(--ink);border-radius:12px}
+.operator h3{font-family:var(--sans);font-weight:600;font-size:17px;letter-spacing:0}
+.trip-route strong{font-family:var(--display);font-weight:600;font-size:36px;letter-spacing:0;font-variant-numeric:tabular-nums}
+.route-line>span{color:var(--line-strong);border-bottom-color:var(--line-strong)}
+.trip-price strong{font-family:var(--display);color:var(--ink);font-size:32px;font-weight:700}
+.trip-details summary{color:var(--ink-2)}
+.trip-details{background:transparent;border-top:1px dashed var(--line-strong)}
+.round-trip-banner{background:var(--sun-tint);border-left-color:var(--sun)}
+.nearby-dates .section{margin:30px 0 12px;font-family:var(--sans);font-size:14px;font-weight:600;color:var(--ink-2)}
+.nearby-dates{margin-bottom:8px}
+
+/* ---------- Đặt chỗ ---------- */
+.steps{gap:8px;flex-wrap:wrap}
+.steps span{padding:7px 14px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--card)}
+.steps .current{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.deck{background:var(--paper);border:1.5px solid var(--line-strong);border-radius:38px 38px 14px 14px}
+.vehicle-front{border-bottom-color:var(--line-strong);color:var(--muted)}
+.seat{border:1.5px solid var(--line-strong);background:var(--card);color:var(--ink);box-shadow:0 3px 0 var(--paper-2);border-radius:8px;font-weight:500}
+.seat:hover{border-color:var(--sea);background:var(--sea-tint);transform:none!important}
+.seat.vip{border-color:var(--sun);background:var(--sun-tint)}
+.seat.selected{background:var(--sea);border-color:var(--sea-dark);color:#fff;box-shadow:0 3px 0 var(--sea-dark)}
+.seat:disabled{background:repeating-linear-gradient(135deg,#e8eae5 0 5px,#dde0d9 5px 10px);border-color:#d3d7cf;color:#9aa19b;box-shadow:none}
+.seat-legend i{border-color:var(--line-strong)}
+.seat-legend i.selected{background:var(--sea)}
+.seat-legend i.unavailable{background:#dde0d9}
+.seat-legend i.vip{background:var(--sun-tint);border-color:var(--sun)}
+.booking-summary{background:var(--card)}
+.summary-total strong{font-family:var(--display);color:var(--ink);font-weight:700;font-size:38px}
+.summary-route>span{color:var(--signal)}
+.passenger-fields{border-top-color:var(--line)}
+.agreement a{color:var(--sea)}
+
+/* ---------- Vé / đơn ---------- */
+.ticket-paper{background:var(--card);border:1px solid var(--line);border-radius:16px}
+.ticket-top{background:var(--ink);color:var(--paper)}
+.ticket-top .brand,.ticket-top .brand span{color:var(--paper)}
+.ticket-route h2{font-family:var(--display)}
+.ticket-route>span{color:var(--signal)}
+.ticket-stub{background:var(--paper);border-top:2px dashed var(--line-strong)}
+.passenger-row{border-bottom-color:var(--line)}
+.passenger-row .seat-badge{color:var(--sea)}
+
+/* ---------- Tài khoản ---------- */
+.customer-nav a{border-radius:999px}
+.customer-nav a.active{background:var(--ink);color:var(--paper)}
+.stats strong{font-family:var(--display);color:var(--ink);font-weight:600}
+
+/* ---------- Footer ---------- */
+.footer{background:var(--ink);color:#d3d8d2;border-top:0;padding:64px 0 26px;margin-top:40px}
+.footer .brand,.footer .brand span{color:var(--paper)}
+.footer p{color:#aab3ac;font-size:13px}
+.footer-grid strong{color:var(--paper);font-family:var(--display);font-weight:600;font-size:20px}
+.footer-grid>div>a:not(.brand){color:#aab3ac;font-size:13.5px}
+.footer-grid>div>a:not(.brand):hover{color:var(--paper)}
+.footer-bottom{border-top-color:#ffffff1f;color:#87918a;font-size:12px}
+
+/* ---------- Hộp thông báo / toast ---------- */
+.notification-panel{background:var(--card);border-color:var(--line)}
+.notification-item.unread{background:var(--sea-tint)}
+
+/* ---------- Các màu xanh còn sót của giao diện cũ ---------- */
+.footer .brand img{box-shadow:0 0 0 1.5px #f1f2ee5c;border-radius:9px}
+.passenger-autofill{background:var(--paper-2);color:var(--ink)}
+.place-option:hover,.place-option[aria-selected=true]{color:var(--ink)}
+.customer-nav a.active{color:var(--paper)}
+.wallet-card{border-color:var(--line);background:linear-gradient(120deg,var(--sea-tint),var(--sun-tint))}
+.editor-cell.filled,.editor-cell.sleeper{border-color:#9cc3be;color:var(--sea-dark);background:var(--sea-tint)}
+.steps{justify-content:flex-start;border-bottom-color:var(--line);overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.steps span{white-space:nowrap}
+.steps .current:after{display:none}
+/* Nút bị khóa (chưa chọn chỗ / chưa đồng ý chính sách): xám rõ ràng, không cam mờ */
+.button:disabled,.button.orange:disabled,.button:disabled:hover,.button.orange:disabled:hover{background:#d8dcd5;color:#7f8781;border-color:transparent;opacity:1;cursor:not-allowed;box-shadow:none}
+.button.outline:disabled{background:transparent;color:#9aa19b;border-color:#d8dcd5}
+/* Khu quản trị */
+.admin-body,.operator-header{background:var(--paper)}
+.operator-sidebar{background:var(--card);border-right-color:var(--line)}
+.operator-sidebar nav a:hover{background:var(--paper-2);color:var(--ink)}
+.operator-sidebar nav a.active{color:var(--paper);background:var(--ink);box-shadow:none;font-weight:600}
+.operator-sidebar nav a.active svg{stroke:var(--paper)}
+.operator-avatar{background:var(--signal);color:#fff}
+.operator-topbar{background:var(--card);border-bottom-color:var(--line)}
+
+/* Chuyển động ngoài trang chủ: chỉ đổi màu, không nâng / trượt phần tử. */
+.button,.date-chip,.trip-card,.seat,.nav nav a,.text-link{transition:background-color .15s ease,border-color .15s ease,color .15s ease}
+.destination:hover,.transport:hover{transform:none}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+@media(max-width:800px){
+  .nav{height:auto;min-height:0;padding:12px 0 8px;row-gap:8px}
+  .nav nav{justify-content:flex-start;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0 -4px;padding:0 4px 4px}
+  .nav nav::-webkit-scrollbar{display:none}
+  .nav nav a{padding:7px 12px;white-space:nowrap;min-height:0;font-size:13px}
+  .trip-route strong{font-size:28px}
+}

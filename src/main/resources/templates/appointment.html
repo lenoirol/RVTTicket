@@ -1,0 +1,19 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Đặt lịch hẹn tư vấn')}"></head><body><header th:replace="~{fragments :: header('appointment')}"></header><main id="main-content" class="container page">
+<nav th:replace="~{fragments :: customerNav('appointment')}"></nav><div class="eyebrow">Tư vấn vé</div><h1 class="page-title">Đặt lịch hẹn tư vấn.</h1><p class="muted">Hẹn gặp nhân viên để được tư vấn tuyến, giá và điều kiện của vé xe khách hoặc vé tàu / thuyền. Mỗi loại vé có lịch làm việc và quy tắc riêng.</p><div th:replace="~{fragments :: messages}"></div>
+<form action="/lich-hen.html" method="get" class="filter-bar"><label>Loại vé<select name="type"><option th:each="s:${strategies}" th:value="${s.type()}" th:text="${s.displayName()}" th:selected="${type==s.type()}"></option></select></label><label>Ngày hẹn<input type="date" name="date" th:min="${minDate}" th:value="${day}" required></label><button class="button outline">Xem khung giờ trống</button></form>
+<section class="card section"><h2 th:text="'Khung giờ ngày '+${#temporals.format(day,'dd/MM/yyyy')}"></h2>
+<p class="muted small-text">Văn phòng không làm việc Chủ nhật. Vé xe khách: đặt cách giờ hiện tại ít nhất 2 giờ, tối đa 14 ngày. Vé tàu / thuyền: đặt trước ít nhất 1 ngày, tối đa 30 ngày.</p>
+<form class="stack" method="post" th:action="@{/lich-hen}" data-busy data-unsaved>
+<input type="hidden" name="type" th:value="${type}"><input type="hidden" name="date" th:value="${day}">
+<fieldset class="fields"><legend>Chọn khung giờ</legend>
+<label th:each="s:${slots}"><input type="radio" name="slot" th:value="${s.time}" th:disabled="${!s.bookable}" required> <span th:text="${s.time}+(${s.bookable}?' · còn '+${s.remaining}+' lượt':' · không thể đặt')"></span></label></fieldset>
+<div class="fields"><label>Họ tên người được tư vấn<input name="name" th:value="${form.name}" maxlength="100" required autocomplete="name"></label><label>Số điện thoại<input name="phone" th:value="${form.phone}" type="tel" pattern="[0-9]{10,15}" required autocomplete="tel"></label>
+<label>Mã đơn liên quan (nếu có)<input name="reservationCode" th:value="${form.reservationCode}" maxlength="30" placeholder="RVT…"><small>Chỉ nhận đơn thuộc tài khoản của bạn.</small></label>
+<label class="full">Nội dung cần tư vấn<textarea name="note" maxlength="500" rows="3" th:text="${form.note}" placeholder="Ví dụ: cần hỏi lịch tàu ra đảo và hành lý cho gia đình 4 người"></textarea></label></div>
+<button class="button">Đặt lịch hẹn</button></form></section>
+<section class="card section"><h2>Lịch hẹn của tôi</h2>
+<div class="empty" th:if="${#lists.isEmpty(mine)}"><p>Bạn chưa có lịch hẹn nào.</p></div>
+<div class="table-scroll" th:unless="${#lists.isEmpty(mine)}"><table><thead><tr><th>Mã lịch hẹn</th><th>Loại vé</th><th>Ngày giờ</th><th>Người được tư vấn</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+<tr th:each="a:${mine}"><td th:text="${a.code}"></td><td th:text="${a.ticketType=='XE_KHACH'?'Xe khách':'Tàu / thuyền'}"></td><td th:text="${#temporals.format(a.date,'dd/MM/yyyy')}+' · '+${a.slot}"></td><td><strong th:text="${a.fullName}"></strong><small th:text="${a.phone}"></small></td><td><span th:replace="~{fragments :: appointmentStatus(${a.status})}"></span></td>
+<td><form th:if="${a.status=='MOI'||a.status=='DA_XAC_NHAN'}" th:action="@{/lich-hen/{code}/huy(code=${a.code})}" method="post" data-confirm="Hủy lịch hẹn này?"><button class="button small outline">Hủy lịch</button></form></td></tr></tbody></table></div></section>
+</main><footer th:replace="~{fragments :: footer}"></footer></body></html>

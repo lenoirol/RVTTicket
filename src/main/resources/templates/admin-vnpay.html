@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Giao dịch VNPay')}"></head><body class="admin-body">
+<header th:replace="~{fragments :: header('')}"></header>
+<main id="main-content" class="container page">
+<div class="eyebrow">Thanh toán · VNPay</div><h1 class="page-title">Giao dịch VNPay.</h1>
+<p class="muted">Kết quả máy chủ, lịch đối soát và xử lý tiền đã thanh toán nhưng chưa thể cấp vé.</p>
+<div th:replace="~{fragments :: messages}"></div>
+<p class="notice" th:unless="${enabled}">VNPay chưa được kích hoạt. Cần cấu hình merchant, khóa bí mật và địa chỉ HTTPS nhận kết quả.</p>
+<form method="get" class="filter-bar"><label>Trạng thái<select name="state"><option value="">Tất cả</option>
+<option value="UNRESOLVED" th:selected="${state=='UNRESOLVED'}">Cần xử lý</option><option value="REFUNDED" th:selected="${state=='REFUNDED'}">Đã xử lý hoàn RVT</option>
+<option th:each="s:${ {'REVIEW','PENDING','SUCCESS','FAILED'} }" th:value="${s}" th:selected="${state==s}" th:text="${s=='REVIEW'?'Chưa cấp vé':s=='PENDING'?'Chờ xác nhận':s=='SUCCESS'?'Đã xác nhận vé':'Không thành công'}"></option>
+</select></label><button class="button outline">Lọc giao dịch</button></form>
+<p class="notice">Chỉ hoàn vào RVT khi máy chủ VNPay đã xác minh tiền thanh toán thành công nhưng chưa cấp vé. Kiểm tra mã giao dịch tại Merchant, ghi lý do rồi xác nhận; mỗi giao dịch chỉ hoàn một lần. Truy vấn chưa có kết quả không được coi là thất bại hoặc tiền đã thu.</p>
+<section class="card"><div class="table-scroll" tabindex="0" aria-label="Giao dịch VNPay; cuộn ngang để xem đầy đủ"><table class="vnpay-table"><thead><tr><th>Tham chiếu / đơn vé</th><th>Số tiền</th><th>Thời gian / đối soát</th><th>Kết quả</th><th>Thông tin VNPay</th><th>Xử lý</th></tr></thead><tbody>
+<tr th:each="a:${rows}">
+<td><code th:text="${a.MaThamChieu}"></code><small><a th:href="@{/admin/don-ve/{code}(code=${a.MaDon})}" th:text="${a.MaDon}"></a></small></td>
+<td th:text="${#numbers.formatDecimal(a.SoTien,0,'POINT',0,'COMMA')}+' ₫'"></td>
+<td><span th:text="${#dates.format(a.NgayTao,'HH:mm dd/MM/yyyy')}"></span><small th:text="'Hết hạn: '+${#dates.format(a.HetHanLuc,'HH:mm:ss dd/MM/yyyy')}"></small>
+<small th:text="'Đã truy vấn: '+${a.SoLanTruyVan}+' lần'"></small><small th:if="${a.TruyVanGanNhatLuc!=null}" th:text="'Lần gần nhất: '+${#dates.format(a.TruyVanGanNhatLuc,'HH:mm dd/MM/yyyy')}"></small>
+<small th:if="${a.CanDoiSoat==true}">Cần đối soát tại Merchant</small><small th:if="${a.LoiTruyVan!=null}" th:text="${a.LoiTruyVan}"></small></td>
+<td><strong th:text="${a.XuLyDoiSoat=='HOAN_RVT'?'Đã hoàn RVT':a.TrangThai=='REVIEW'?'Cần đối chiếu':a.TrangThai=='SUCCESS'?'Đã xác nhận vé':a.TrangThai=='FAILED'?'Không thành công':'Chờ xác nhận'}"></strong>
+<small th:text="${a.GhiChu==null?'':#strings.replace(a.GhiChu,'VNPay Sandbox','VNPay')}"></small>
+<small th:if="${a.NguonXacNhan!=null}" th:text="${a.NguonXacNhan=='IPN'?'Nguồn: IPN':a.NguonXacNhan=='QUERYDR'?'Nguồn: truy vấn máy chủ':'Nguồn: bản ghi lịch sử'}"></small>
+</td><td><span th:text="${a.MaVNPay==null?'—':a.MaVNPay}"></span><small th:text="${a.MaNganHang}"></small><small th:if="${a.MaKetQua!=null}" th:text="'Mã kết quả: '+${a.MaKetQua}+' / '+${a.TrangThaiVNPay}"></small></td>
+<td><form th:if="${a.TrangThai=='PENDING' &amp;&amp; queryEnabled}" th:action="@{/admin/vnpay/{ref}/truy-van(ref=${a.MaThamChieu})}" method="post" data-busy><button class="button outline small">Truy vấn VNPay</button></form>
+<form class="stack" th:if="${a.TrangThai=='REVIEW' &amp;&amp; a.XuLyDoiSoat==null}" th:action="@{/admin/vnpay/{ref}/hoan-rvt(ref=${a.MaThamChieu})}" method="post" data-busy th:attr="data-confirm='Hoàn '+${#numbers.formatDecimal(a.SoTien,0,'POINT',0,'COMMA')}+' đồng vào số dư RVT cho giao dịch '+${a.MaThamChieu}+'? Không cấp lại vé và không hoàn về ngân hàng.'">
+<label>Kết quả đối chiếu / lý do<textarea name="reason" rows="3" minlength="10" maxlength="500" required placeholder="Mã giao dịch đã đối chiếu tại Merchant và lý do không cấp vé"></textarea></label>
+<button class="button outline small">Xác nhận hoàn RVT</button></form>
+<div th:if="${a.XuLyDoiSoat!=null}"><strong th:text="${a.NguoiXuLy}"></strong><small th:text="${#dates.format(a.XuLyLuc,'HH:mm dd/MM/yyyy')}"></small><small th:text="${a.GhiChuXuLy}"></small></div></td>
+</tr><tr th:if="${#lists.isEmpty(rows)}"><td colspan="6" class="admin-empty">Chưa có giao dịch trong mục này.</td></tr></tbody></table></div>
+<nav class="product-pagination" aria-label="Phân trang giao dịch"><a class="button outline" th:if="${page>1}" th:href="@{/admin/vnpay(state=${state},page=${page-1})}">← Trước</a><span th:text="'Trang '+${page}"></span><a class="button outline" th:if="${next}" th:href="@{/admin/vnpay(state=${state},page=${page+1})}">Tiếp</a></nav>
+</section></main><footer th:replace="~{fragments :: footer}"></footer></body></html>
