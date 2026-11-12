@@ -6,7 +6,7 @@
   <link rel="icon" th:href="@{/images/logo.svg}"><link rel="stylesheet" th:href="@{/css/fonts.css}"><link rel="stylesheet" th:href="@{/css/fonts-web.css}"><link rel="preload" th:href="@{/fonts/web/barlow-condensed-vietnamese-700-normal.woff2}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" th:href="@{/css/app.css}"><link rel="stylesheet" th:href="@{/css/experience.css}"><link rel="stylesheet" th:href="@{/css/motion.css}">
   <link rel="stylesheet" th:href="@{/css/product.css}"><script type="module" th:src="@{/js/product.js}"></script>
-  <link rel="stylesheet" th:href="@{/css/destination-carousel.css}"><script type="module" th:src="@{/js/destination-carousel.js}"></script>
+  <link rel="stylesheet" th:href="@{/css/destination-carousel.css}"><script type="module" th:src="@{/js/destination-carousel.js}"></script><script type="module" th:src="@{/js/nearby.js}"></script>
   <link th:if="${adminLayout}" rel="stylesheet" th:href="@{/css/admin.css}">
   <script th:if="${adminLayout}" type="module" th:src="@{/js/admin.js}"></script>
   <script th:inline="javascript">window.savedPassengers = /*[[${booking != null ? booking.passengers : null}]]*/ null; window.fieldErrors = /*[[${fieldErrors}]]*/ {};</script>
@@ -48,7 +48,7 @@
   </div>
 </header>
 <footer th:fragment="footer" class="footer" th:unless="${adminLayout}">
-  <div class="container footer-grid"><div><a href="/" class="brand"><img th:src="@{/images/logo.svg}" alt=""><span>RVT Ticket</span></a><p>Đặt vé xe khách và tàu / thuyền.<br>Chọn chỗ, xem giá, quản lý hành trình.</p></div><div><strong>Đặt chuyến</strong><a href="/chuyen-di.html?type=XE_KHACH">Vé xe khách</a><a href="/chuyen-di.html?type=TAU_THUYEN">Vé tàu / thuyền</a><a href="/tra-cuu.html">Tra cứu đơn vé</a><a href="/hoa-don.html">Tra cứu hóa đơn</a></div><div><strong>Thông tin</strong><a href="/chinh-sach.html">Hành lý &amp; hủy vé</a><a href="/workspace.html">Khu vực tài khoản</a><a href="/diem-den.html">Điểm đến du lịch</a><a href="/tuyen-tau.html">Tuyến tàu &amp; cảng biển</a><a href="/huong-dan.html">Hướng dẫn &amp; hỗ trợ</a><a href="/bao-mat.html">Quyền riêng tư</a><a href="/nguon-anh.html">Nguồn ảnh</a></div></div>
+  <div class="container footer-grid"><div><a href="/" class="brand"><img th:src="@{/images/logo.svg}" alt=""><span>RVT Ticket</span></a><p>Đặt vé xe khách và tàu / thuyền.<br>Chọn chỗ, xem giá, quản lý hành trình.</p></div><div><strong>Đặt chuyến</strong><a href="/chuyen-di.html?type=XE_KHACH">Vé xe khách</a><a href="/chuyen-di.html?type=TAU_THUYEN">Vé tàu / thuyền</a><a href="/tra-cuu.html">Tra cứu đơn vé</a><a href="/hoa-don.html">Tra cứu hóa đơn</a><a href="/ben-xe.html">Bến xe &amp; vị trí</a></div><div><strong>Thông tin</strong><a href="/chinh-sach.html">Hành lý &amp; hủy vé</a><a href="/workspace.html">Khu vực tài khoản</a><a href="/diem-den.html">Điểm đến du lịch</a><a href="/tuyen-tau.html">Tuyến tàu &amp; cảng biển</a><a href="/huong-dan.html">Hướng dẫn &amp; hỗ trợ</a><a href="/bao-mat.html">Quyền riêng tư</a><a href="/nguon-anh.html">Nguồn ảnh</a></div></div>
   <div class="container footer-bottom"><span>© 2026 RVT Ticket</span><span>Xe khách &amp; tàu / thuyền</span></div>
 </footer>
 <div th:fragment="messages"><div role="alert" class="alert error" data-popup="error" th:if="${error}" th:text="${error}"></div><div role="status" class="alert success" data-popup="success" th:if="${message}" th:text="${message}"></div></div>
@@ -79,7 +79,7 @@
   <option th:if="${value!=null &amp;&amp; !#strings.isEmpty(value)}" th:value="${value}" th:text="${#strings.startsWith(value,'province:')?'Tỉnh/thành đã chọn':value}" selected></option>
   <optgroup th:each="group:${placeGroups}" th:label="${group.TenTinh}">
     <option th:value="'province:'+ ${group.MaTinh}" th:text="'Toàn tỉnh/thành · '+${group.TenTinh}" th:attr="data-aliases=${group.TenCu}" th:if="${!required}" th:selected="${value=='province:'+group.MaTinh}"></option>
-    <option th:each="d:${group.places}" th:value="${d.TenDiem}" th:text="${d.TenDiem}+' · '+${group.TenTinh}" th:attr="data-aliases=${group.TenCu}" th:selected="${value==d.TenDiem}"></option>
+    <option th:each="d:${group.places}" th:value="${d.TenDiem}" th:text="${d.LaKhuVuc}?${d.TenDiem}+' · '+${group.TenTinh}+' · xe trung chuyển':${d.TenDiem}+' · '+${group.TenTinh}" th:attr="data-aliases=${group.TenCu}+';'+${d.BiDanh?:''}+';'+${d.PhucVuBoi?:''}" th:selected="${value==d.TenDiem}"></option>
   </optgroup>
 </select>
 </body></html>

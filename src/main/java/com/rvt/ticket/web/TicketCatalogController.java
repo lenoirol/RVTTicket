@@ -18,7 +18,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class TicketCatalogController {
     private final TicketService service;
-    public TicketCatalogController(TicketService service) {this.service=service;}
+    private final com.rvt.ticket.booking.PlaceService placeCatalog;
+    private final com.rvt.ticket.booking.StationService stations;
+    public TicketCatalogController(TicketService service,com.rvt.ticket.booking.PlaceService places,com.rvt.ticket.booking.StationService stations) {this.service=service;this.placeCatalog=places;this.stations=stations;}
     @GetMapping("/")
     String home(Model m) {
         m.addAttribute("destinations",DestinationGuide.featured());
@@ -41,8 +43,12 @@ public class TicketCatalogController {
         m.addAttribute("rtQuery",outbound!=null?"&outbound="+outbound:returnDate!=null?"&returnDate="+returnDate:"");
         m.addAttribute("sort",sort);m.addAttribute("places",places);m.addAttribute("period",period);m.addAttribute("vehicle",vehicle);m.addAttribute("deck",deck);
         m.addAttribute("type",type);m.addAttribute("from",from);m.addAttribute("to",to);m.addAttribute("date",date);
+        // Khu vực con: tìm chuyến của thành phố phục vụ, chọn sẵn điểm trung chuyển ở bước đặt chỗ.
+        var fromArea=placeCatalog.area(from).orElse(null);var toArea=placeCatalog.area(to).orElse(null);
+        m.addAttribute("fromArea",fromArea);m.addAttribute("toArea",toArea);
+        m.addAttribute("pickupArea",fromArea==null?null:fromArea.get("MaDiem"));m.addAttribute("dropoffArea",toArea==null?null:toArea.get("MaDiem"));
         m.addAttribute("nearbyDates",service.nextDates(type,from,to,date,places,period));
-        var trips=service.search(type,from,to,date).stream().map(this::vietnamTime).filter(t->((Number)t.get("ConCho")).intValue()>=places).map(t->{t.put("LoaiXe",vehicleClass(t));return t;}).filter(t->vehicle.equals("all")||vehicle.equals(t.get("LoaiXe"))).filter(t->deck.equals("all")||((Number)t.get(deck.equals("lower")?"ConTangDuoi":"ConTangTren")).intValue()>=places).filter(t->outboundTrip==null||((java.sql.Timestamp)t.get("KhoiHanh")).after((java.sql.Timestamp)outboundTrip.get("DuKienDen"))).filter(t->{int hour=((java.sql.Timestamp)t.get("KhoiHanh")).toLocalDateTime().getHour();return period.equals("all")||(period.equals("morning")&&hour<12)||(period.equals("afternoon")&&hour>=12&&hour<18)||(period.equals("evening")&&hour>=18);}).sorted(sort.equals("price")?Comparator.comparing(t->(BigDecimal)t.get("GiaCoBan")):sort.equals("duration")?Comparator.comparing(t->java.time.Duration.between(((java.sql.Timestamp)t.get("KhoiHanh")).toLocalDateTime(),((java.sql.Timestamp)t.get("DuKienDen")).toLocalDateTime())):Comparator.comparing(t->(java.sql.Timestamp)t.get("KhoiHanh"))).toList();
+        var trips=service.search(type,from,to,date).stream().map(this::vietnamTime).filter(t->((Number)t.get("ConCho")).intValue()>=places).map(t->{t.put("LoaiXe",vehicleClass(t));t.put("BenDi",stations.byName((String)t.get("DiemDon")).orElse(null));t.put("BenDen",stations.byName((String)t.get("DiemTra")).orElse(null));return t;}).filter(t->vehicle.equals("all")||vehicle.equals(t.get("LoaiXe"))).filter(t->deck.equals("all")||((Number)t.get(deck.equals("lower")?"ConTangDuoi":"ConTangTren")).intValue()>=places).filter(t->outboundTrip==null||((java.sql.Timestamp)t.get("KhoiHanh")).after((java.sql.Timestamp)outboundTrip.get("DuKienDen"))).filter(t->{int hour=((java.sql.Timestamp)t.get("KhoiHanh")).toLocalDateTime().getHour();return period.equals("all")||(period.equals("morning")&&hour<12)||(period.equals("afternoon")&&hour>=12&&hour<18)||(period.equals("evening")&&hour>=18);}).sorted(sort.equals("price")?Comparator.comparing(t->(BigDecimal)t.get("GiaCoBan")):sort.equals("duration")?Comparator.comparing(t->java.time.Duration.between(((java.sql.Timestamp)t.get("KhoiHanh")).toLocalDateTime(),((java.sql.Timestamp)t.get("DuKienDen")).toLocalDateTime())):Comparator.comparing(t->(java.sql.Timestamp)t.get("KhoiHanh"))).toList();
         m.addAttribute("trips",trips);return "search";
     }
     /** Phân loại xe để lọc: limousine (theo tên phương tiện), giường nằm hoặc ghế ngồi; tàu thuyền không phân loại. */

@@ -28,11 +28,40 @@ public class PlaceService {
             for(String name:p[3].split(";")){
                 String id=p[0]+"-"+(++n);
                 if(db.queryForObject("SELECT COUNT(*) FROM dbo.DiaDiem WHERE TenDiem=?",Integer.class,name)==0)
-                    db.update("INSERT dbo.DiaDiem VALUES(?,?,?)",id,p[0],name);
+                    db.update("INSERT dbo.DiaDiem(MaDiem,MaTinh,TenDiem) VALUES(?,?,?)",id,p[0],name);
             }
         }
         invalidateCatalogue();
         linkTrips();
+    }
+    /**
+     * Khu vực con (quận, huyện cũ...) từ data/vietnam-areas.tsv. Mỗi khu vực là một DiaDiem có PhucVuBoi = thành phố có chuyến,
+     * kèm một điểm đón / trả trung chuyển (DiemDonTra) gắn MaDiem. Chạy lại an toàn: đã có thì cập nhật, không xóa gì.
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void seedAreas() throws java.io.IOException {
+        int order=0;
+        for(String line:new ClassPathResource("data/vietnam-areas.tsv").getContentAsString(StandardCharsets.UTF_8).split("\\R")){
+            if(line.isBlank()||line.startsWith("#"))continue;
+            String[] p=line.split("\\|",-1);
+            String province=p[0],area=p[1],aliases=p[2],served=p[3],stop=p[4].isBlank()?"Điểm đón "+area:p[4];
+            int pickup=Integer.parseInt(p[5].strip()),dropoff=Integer.parseInt(p[6].strip());order++;
+            var provinceName=db.queryForList("SELECT TenTinh FROM dbo.TinhThanh WHERE MaTinh=?",String.class,province);
+            if(provinceName.isEmpty())continue;
+            var ids=db.queryForList("SELECT MaDiem FROM dbo.DiaDiem WHERE TenDiem=?",String.class,area);
+            String id=ids.isEmpty()?"kv-"+province+"-"+order:ids.getFirst();
+            if(ids.isEmpty())db.update("INSERT dbo.DiaDiem(MaDiem,MaTinh,TenDiem,PhucVuBoi,LaKhuVuc,BiDanh,ThuTu) VALUES(?,?,?,?,1,?,?)",id,province,area,served,aliases,order);
+            else db.update("UPDATE dbo.DiaDiem SET PhucVuBoi=?,LaKhuVuc=1,BiDanh=?,ThuTu=? WHERE MaDiem=?",served,aliases,order,id);
+            String address="Khu vực "+area.replace(" (cũ)"," cũ")+", "+provinceName.getFirst();
+            if(db.update("UPDATE dbo.DiemDonTra SET MaDiem=? WHERE ThanhPho=? AND TenDiem=?",id,served,stop)==0)
+                db.update("INSERT dbo.DiemDonTra(ThanhPho,TenDiem,DiaChi,LaTrungChuyen,PhutKhiDon,PhutKhiTra,MaDiem) VALUES(?,?,?,1,?,?,?)",served,stop,address,pickup,dropoff,id);
+        }
+        invalidateCatalogue();
+    }
+    /** Khu vực con theo tên hiển thị; rỗng nếu không phải khu vực. */
+    public Optional<Map<String,Object>> area(String name){
+        if(name==null||name.isBlank())return Optional.empty();
+        return destinations().stream().filter(d->Boolean.TRUE.equals(d.get("LaKhuVuc"))&&(d.get("TenDiem").equals(name)||d.get("MaDiem").equals(name))).findFirst();
     }
     /** Gắn mã địa điểm cho chuyến chưa có (rẻ, chạy mỗi lần khởi động). */
     public void linkTrips() {
@@ -48,7 +77,7 @@ public class PlaceService {
             });
     }
     public List<Map<String,Object>> provinces(){return catalogue.get("provinces",()->db.queryForList("SELECT * FROM dbo.TinhThanh ORDER BY TenTinh"));}
-    public List<Map<String,Object>> destinations(){return catalogue.get("destinations",()->db.queryForList("SELECT d.*,p.TenTinh,p.TenCu FROM dbo.DiaDiem d JOIN dbo.TinhThanh p ON p.MaTinh=d.MaTinh ORDER BY p.TenTinh,d.TenDiem"));}
+    public List<Map<String,Object>> destinations(){return catalogue.get("destinations",()->db.queryForList("SELECT d.*,p.TenTinh,p.TenCu FROM dbo.DiaDiem d JOIN dbo.TinhThanh p ON p.MaTinh=d.MaTinh ORDER BY p.TenTinh,d.LaKhuVuc,ISNULL(d.ThuTu,0),d.TenDiem"));}
     public List<Map<String,Object>> groups(){return catalogue.get("groups",this::loadGroups);}
     private List<Map<String,Object>> loadGroups(){
         var destinations=destinations();return provinces().stream().map(p->{
@@ -60,7 +89,7 @@ public class PlaceService {
     public void add(String province,String name,String actor){
         if(province==null||name==null||name.isBlank()||name.length()>150||db.queryForObject("SELECT COUNT(*) FROM dbo.TinhThanh WHERE MaTinh=?",Integer.class,province)==0)
             throw new IllegalArgumentException("Chọn tỉnh/thành và nhập tên điểm đến (tối đa 150 ký tự).");
-        db.update("INSERT dbo.DiaDiem VALUES(?,?,?)","custom-"+UUID.randomUUID().toString().replace("-",""),province,name.strip());
+        db.update("INSERT dbo.DiaDiem(MaDiem,MaTinh,TenDiem) VALUES(?,?,?)","custom-"+UUID.randomUUID().toString().replace("-",""),province,name.strip());
         invalidateCatalogue();
         db.update("INSERT dbo.NhatKyThaoTac(NguoiThucHien,HanhDong,DoiTuong) VALUES(?,'THEM_DIA_DIEM',?)",actor,name.strip().substring(0,Math.min(name.strip().length(),100)));
     }
@@ -73,24 +102,27 @@ public class PlaceService {
             String id=selected.substring(9);
             if(db.queryForObject("SELECT COUNT(*) FROM dbo.TinhThanh WHERE MaTinh=?",Integer.class,id)==0)
                 throw new IllegalArgumentException("Tỉnh/thành không có trong danh mục.");
-            var names=db.queryForList("SELECT TenDiem FROM dbo.DiaDiem WHERE MaTinh=?",String.class,id);
-            names.add(db.queryForObject("SELECT TenTinh FROM dbo.TinhThanh WHERE MaTinh=?",String.class,id));return names;
+            var names=db.queryForList("SELECT COALESCE(PhucVuBoi,TenDiem) FROM dbo.DiaDiem WHERE MaTinh=?",String.class,id);
+            names.add(db.queryForObject("SELECT TenTinh FROM dbo.TinhThanh WHERE MaTinh=?",String.class,id));return names.stream().distinct().toList();
         }
         String value=normalized(selected);
         if(Set.of("sai gon","ho chi minh","tp hcm","tphcm").contains(value))return List.of("TP. Hồ Chí Minh");
         for(var d:destinations()) if(normalized((String)d.get("TenDiem")).equals(value)||d.get("MaDiem").equals(selected))
-            return List.of((String)d.get("TenDiem"));
+            return List.of((String)(d.get("PhucVuBoi")!=null?d.get("PhucVuBoi"):d.get("TenDiem")));
+        // Khu vực con còn tìm được theo từ khóa phụ (ví dụ Phú Mỹ Hưng → Quận 7 cũ).
+        for(var d:destinations()) if(d.get("BiDanh")!=null) for(String alias:((String)d.get("BiDanh")).split(";"))
+            if(!alias.isBlank()&&normalized(alias).equals(value))return List.of((String)d.get("PhucVuBoi"));
         for(var p:provinces()){
             if(normalized((String)p.get("TenTinh")).equals(value)||normalized((String)p.get("MaTinh")).equals(value)){
-                var names=db.queryForList("SELECT TenDiem FROM dbo.DiaDiem WHERE MaTinh=?",String.class,p.get("MaTinh"));
-                names.add((String)p.get("TenTinh"));return names;
+                var names=db.queryForList("SELECT COALESCE(PhucVuBoi,TenDiem) FROM dbo.DiaDiem WHERE MaTinh=?",String.class,p.get("MaTinh"));
+                names.add((String)p.get("TenTinh"));return names.stream().distinct().toList();
             }
         }
         for(var d:destinations()) if(normalized((String)d.get("TenDiem")).equals(value)||d.get("MaDiem").equals(selected))
             return List.of((String)d.get("TenDiem"));
         // Former province names remain searchable, but are not labelled current provinces.
         for(var p:provinces()) for(String alias:((String)p.get("TenCu")).split(";"))if(!alias.isBlank()&&normalized(alias).equals(value))
-            return db.queryForList("SELECT TenDiem FROM dbo.DiaDiem WHERE MaTinh=?",String.class,p.get("MaTinh"));
+            return db.queryForList("SELECT DISTINCT COALESCE(PhucVuBoi,TenDiem) FROM dbo.DiaDiem WHERE MaTinh=?",String.class,p.get("MaTinh"));
         return List.of(selected.strip());
     }
     public String destinationId(String name){var rows=db.queryForList("SELECT MaDiem FROM dbo.DiaDiem WHERE TenDiem=?",String.class,name);return rows.isEmpty()?null:rows.getFirst();}

@@ -14,7 +14,8 @@ public class StopService {
     public record Stop(Integer id,String name,String address,boolean transfer,Timestamp time,int offsetMinutes){}
     public record Choice(Stop pickup,Stop dropoff){}
     private final JdbcTemplate db;
-    public StopService(JdbcTemplate db){this.db=db;}
+    private final StationService stations;
+    public StopService(JdbcTemplate db,StationService stations){this.db=db;this.stations=stations;}
 
     public List<Stop> pickups(Map<String,Object> trip){return options(trip,true);}
     public List<Stop> dropoffs(Map<String,Object> trip){return options(trip,false);}
@@ -23,15 +24,22 @@ public class StopService {
         Timestamp base=(Timestamp)trip.get(pickup?"KhoiHanh":"DuKienDen");
         String station=(String)trip.get(pickup?"DiemDon":"DiemTra");
         var list=new ArrayList<Stop>();
-        list.add(new Stop(null,station,pickup?"Bến đi của chuyến":"Bến đến của chuyến",false,base,0));
+        String stationAddress=stations.byName(station).map(s->(String)s.get("DiaChi")).orElse(pickup?"Bến đi của chuyến":"Bến đến của chuyến");
+        list.add(new Stop(null,station,stationAddress,false,base,0));
         if(!"XE_KHACH".equals(trip.get("LoaiVe")))return list;
         String column=pickup?"PhutKhiDon":"PhutKhiTra";
         for(var r:db.queryForList("SELECT DiemID,TenDiem,DiaChi,LaTrungChuyen,"+column+" AS Phut FROM dbo.DiemDonTra WHERE HoatDong=1 AND "+column+" IS NOT NULL AND ThanhPho=? ORDER BY TenDiem",trip.get(pickup?"NoiDi":"NoiDen"))){
             int minutes=((Number)r.get("Phut")).intValue();
-            list.add(new Stop(((Number)r.get("DiemID")).intValue(),(String)r.get("TenDiem"),(String)r.get("DiaChi"),Boolean.TRUE.equals(r.get("LaTrungChuyen")),
+            list.add(new Stop(((Number)r.get("DiemID")).intValue(),(String)r.get("TenDiem"),r.get("DiaChi")+" · văn phòng minh họa của đồ án",Boolean.TRUE.equals(r.get("LaTrungChuyen")),
                 Timestamp.valueOf(base.toLocalDateTime().plusMinutes(minutes)),minutes));
         }
         return list;
+    }
+    /** Điểm đón (hoặc trả) của khu vực con mà khách đã chọn khi tìm chuyến; null nếu khu vực không phục vụ chuyến này. */
+    public Integer areaStop(Map<String,Object> trip,String areaId,boolean pickup){
+        if(areaId==null||areaId.isBlank()||!"XE_KHACH".equals(trip.get("LoaiVe")))return null;
+        var ids=db.queryForList("SELECT DiemID FROM dbo.DiemDonTra WHERE HoatDong=1 AND MaDiem=? AND ThanhPho=? AND "+(pickup?"PhutKhiDon":"PhutKhiTra")+" IS NOT NULL",Integer.class,areaId,trip.get(pickup?"NoiDi":"NoiDen"));
+        return ids.isEmpty()?null:ids.getFirst();
     }
     /** Kiểm tra id điểm thuộc đúng chuyến; null = bến mặc định. */
     public Choice choose(Map<String,Object> trip,Integer pickupId,Integer dropoffId){

@@ -1,0 +1,53 @@
+# Khu vực con trong tỉnh/thành để khách tìm chuyến theo nơi ở. Tên quận, huyện trước sắp xếp 2025 ghi kèm (cũ).
+# province slug | khu vực | từ khóa tìm thêm | thành phố có chuyến phục vụ | điểm đón / trả (trống = Điểm đón <khu vực>) | phút khi đón (so với giờ xe chạy) | phút khi trả (so với giờ xe đến)
+ho-chi-minh|Quận 1 (cũ)|Bến Thành;Sài Gòn|TP. Hồ Chí Minh|Văn phòng RVT Quận 1|-60|45
+ho-chi-minh|Quận 3 (cũ)|Võ Thị Sáu|TP. Hồ Chí Minh||-60|45
+ho-chi-minh|Quận 5 (cũ)|Chợ Lớn|TP. Hồ Chí Minh||-60|45
+ho-chi-minh|Quận 7 (cũ)|Phú Mỹ Hưng;Tân Phong|TP. Hồ Chí Minh||-70|50
+ho-chi-minh|Quận 10 (cũ)||TP. Hồ Chí Minh|Văn phòng RVT Quận 10|-60|45
+ho-chi-minh|Quận 12 (cũ)||TP. Hồ Chí Minh||-50|40
+ho-chi-minh|Bình Thạnh (cũ)||TP. Hồ Chí Minh||-55|40
+ho-chi-minh|Phú Nhuận (cũ)||TP. Hồ Chí Minh||-55|40
+ho-chi-minh|Gò Vấp (cũ)||TP. Hồ Chí Minh||-55|40
+ho-chi-minh|Tân Bình (cũ)|Sân bay Tân Sơn Nhất|TP. Hồ Chí Minh||-55|40
+ho-chi-minh|Tân Phú (cũ)||TP. Hồ Chí Minh||-60|45
+ho-chi-minh|Bình Tân (cũ)|An Lạc|TP. Hồ Chí Minh||-60|45
+ho-chi-minh|Thủ Đức (cũ)|Quận 2;Quận 9;Thảo Điền|TP. Hồ Chí Minh|Văn phòng RVT Thủ Đức|-45|40
+ho-chi-minh|Nhà Bè (cũ)|Phú Xuân|TP. Hồ Chí Minh||-80|60
+ho-chi-minh|Bình Chánh (cũ)||TP. Hồ Chí Minh||-70|55
+ho-chi-minh|Hóc Môn (cũ)||TP. Hồ Chí Minh||-60|50
+ho-chi-minh|Củ Chi (cũ)||TP. Hồ Chí Minh||-90|70
+ha-noi|Hoàn Kiếm (cũ)|Phố cổ;Hồ Gươm|Hà Nội|Văn phòng RVT Hoàn Kiếm|-60|45
+ha-noi|Ba Đình (cũ)||Hà Nội||-60|45
+ha-noi|Đống Đa (cũ)||Hà Nội||-55|45
+ha-noi|Hai Bà Trưng (cũ)||Hà Nội||-55|45
+ha-noi|Cầu Giấy (cũ)||Hà Nội|Văn phòng RVT Cầu Giấy|-45|40
+ha-noi|Thanh Xuân (cũ)||Hà Nội||-50|40
+ha-noi|Hà Đông (cũ)||Hà Nội||-50|45
+ha-noi|Nam Từ Liêm (cũ)|Mỹ Đình|Hà Nội||-45|40
+ha-noi|Long Biên (cũ)||Hà Nội|Văn phòng RVT Long Biên|-45|40
+ha-noi|Gia Lâm (cũ)||Hà Nội||-55|45
+ha-noi|Đông Anh (cũ)|Sân bay Nội Bài|Hà Nội||-60|50
+lam-dong|Đức Trọng (cũ)|Liên Nghĩa;Liên Khương|Đà Lạt||-60|45
+lam-dong|Lạc Dương (cũ)|Lang Biang|Đà Lạt||-40|30
+lam-dong|Đơn Dương (cũ)|Thạnh Mỹ|Đà Lạt||-60|45
+lam-dong|Lâm Hà (cũ)|Đinh Văn;Nam Ban|Đà Lạt||-70|55
+lam-dong|Di Linh (cũ)||Bảo Lộc||-60|45
+lam-dong|Bảo Lâm (cũ)|Lộc Thắng|Bảo Lộc||-45|35
+da-nang|Hải Châu (cũ)|Cầu Rồng|Đà Nẵng|Văn phòng RVT Hải Châu|-40|30
+da-nang|Thanh Khê (cũ)||Đà Nẵng||-40|30
+da-nang|Sơn Trà (cũ)|Mỹ Khê|Đà Nẵng|Văn phòng RVT Sơn Trà|-40|35
+da-nang|Ngũ Hành Sơn (cũ)||Đà Nẵng||-45|35
+da-nang|Liên Chiểu (cũ)||Đà Nẵng||-35|30
+da-nang|Cẩm Lệ (cũ)||Đà Nẵng||-35|30
+khanh-hoa|Diên Khánh (cũ)||Nha Trang||-45|35
+khanh-hoa|Cam Lâm (cũ)|Bãi Dài|Nha Trang||-60|45
+can-tho|Ninh Kiều (cũ)|Bến Ninh Kiều|Cần Thơ|Văn phòng RVT Ninh Kiều|-40|30
+can-tho|Cái Răng (cũ)||Cần Thơ|Văn phòng RVT Cái Răng|-30|30
+can-tho|Bình Thủy (cũ)||Cần Thơ||-40|30
+can-tho|Ô Môn (cũ)||Cần Thơ||-60|45
+can-tho|Phong Điền (cũ)||Cần Thơ||-50|40
+hai-phong|Lê Chân (cũ)||Hải Phòng|Văn phòng RVT Lê Chân|-40|30
+hai-phong|Ngô Quyền (cũ)||Hải Phòng||-40|30
+hai-phong|Hồng Bàng (cũ)||Hải Phòng||-40|30
+hai-phong|Kiến An (cũ)||Hải Phòng||-45|35

@@ -26,6 +26,7 @@ public class ReservationController {
     private final PromotionService promotions;
     private final ExchangeService exchanges;
     private final InvoiceService invoices;
+    @org.springframework.beans.factory.annotation.Autowired private StationService stations;
     public ReservationController(TicketService service,AccountService accounts,WalletService wallet,
             com.rvt.ticket.payment.VnpayService vnpay,@org.springframework.beans.factory.annotation.Value("${rvt.payment.allow-demo:false}") boolean allowDemo,
             StopService stops,PromotionService promotions,ExchangeService exchanges,InvoiceService invoices) {
@@ -43,9 +44,12 @@ public class ReservationController {
         binder.setAllowedFields("requestKey","name","phone","email","passengers[*].name","passengers[*].seat","passengers[*].luggage","passengers[*].birthDate","passengers[*].document","passengers[*].documentType","passengers[*].nationality","pickupId","dropoffId");
     }
     @GetMapping("/dat-ve/{id}")
-    String booking(@PathVariable int id,@RequestParam(required=false) Integer returnTrip,@RequestParam(required=false) String outboundOrder,Model m,org.springframework.security.core.Authentication auth) {
+    String booking(@PathVariable int id,@RequestParam(required=false) Integer returnTrip,@RequestParam(required=false) String outboundOrder,
+            @RequestParam(required=false) String pickupArea,@RequestParam(required=false) String dropoffArea,Model m,org.springframework.security.core.Authentication auth) {
         service.requireConfigured(id);
         var form=new BookingForm();
+        // Khách tìm chuyến từ một khu vực con (ví dụ Quận 7 cũ): chọn sẵn điểm trung chuyển của khu vực đó.
+        var raw=service.trip(id);form.setPickupId(stops.areaStop(raw,pickupArea,true));form.setDropoffId(stops.areaStop(raw,dropoffArea,false));
         form.setRequestKey(UUID.randomUUID().toString());
         if(auth!=null&&auth.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_CUSTOMER"))){
             var p=accounts.profile(auth.getName());form.setName((String)p.get("HoTen"));form.setPhone((String)p.get("SoDienThoai"));form.setEmail((String)p.get("Email"));
@@ -63,6 +67,7 @@ public class ReservationController {
         m.addAttribute("hasLayout",seats.stream().allMatch(s->s.get("Tang")!=null));
         m.addAttribute("maxFloor",seats.stream().map(s->s.get("Tang")).filter(Objects::nonNull).mapToInt(v->((Number)v).intValue()).max().orElse(1));
         m.addAttribute("pickups",stopView(stops.pickups(trip)));m.addAttribute("dropoffs",stopView(stops.dropoffs(trip)));
+        m.addAttribute("pickupMap",stations.byName((String)trip.get("DiemDon")).map(StationService::mapUrl).orElse(null));
     }
     @PostMapping("/dat-ve/{id}")
     String book(@PathVariable int id,@Valid @ModelAttribute("booking") BookingForm form,BindingResult errors,@RequestParam(required=false) Integer returnTrip,@RequestParam(required=false) String outboundOrder,Model m,HttpSession session,Principal principal) {

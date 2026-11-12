@@ -1,0 +1,17 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Bến xe & vị trí')}"></head><body><header th:replace="~{fragments :: header('')}"></header>
+<main id="main-content" class="container page">
+<div class="eyebrow">Bến xe khách</div><h1 class="page-title">Bến xe gần bạn.</h1>
+<p class="muted" th:text="${total}+' bến xe có chuyến của RVT Ticket. Bấm Vị trí của bạn để sắp xếp theo khoảng cách, hoặc gõ tên bến, thành phố.'"></p>
+<div class="station-tools card"><button type="button" class="button orange" data-locate-stations>📍 Vị trí của bạn</button><label class="station-filter">Tìm bến<input type="search" data-station-filter placeholder="Ví dụ: Miền Tây, Đà Lạt, Mỹ Đình" autocomplete="off"></label>
+<p class="small-text muted" data-locate-status role="status">Vị trí chỉ dùng trên trình duyệt của bạn để tính khoảng cách, không gửi lên máy chủ.</p></div>
+<p class="notice small-text">Có mặt tại bến trước giờ khởi hành 30 phút. Địa chỉ và tọa độ lấy từ OpenStreetMap; bến có nhãn cần kiểm tra hoặc gần đúng thì hãy đối chiếu thêm trước khi đi.</p>
+<section class="station-list" data-station-list>
+ <th:block th:each="g:${groups}"><h2 class="station-city" th:text="${g.key}"></h2>
+ <article class="card station-card" th:each="s:${g.value}" th:attr="data-lat=${s.lat},data-lng=${s.lng},data-search=${s.ten}+' '+${s.thanhPho}+' '+${s.diaChi}">
+  <div><h3 th:text="${s.ten}"></h3><p class="small-text" th:text="${s.diaChi}"></p>
+   <span class="pill soft" th:if="${s.doChinhXac=='CAN_KIEM_TRA'}">Vị trí cần kiểm tra</span><span class="pill soft" th:if="${s.doChinhXac=='GAN_DUNG'}">Vị trí gần đúng</span><strong class="station-distance" data-distance hidden></strong></div>
+  <div class="station-actions"><a class="button small" th:href="@{/chuyen-di(type='XE_KHACH',from=${s.thanhPho})}">Tìm chuyến từ bến này</a><a class="text-link" target="_blank" rel="noopener noreferrer" th:href="${s.banDo}">Mở bản đồ ↗</a></div>
+ </article></th:block>
+</section>
+<p class="footnote">Dữ liệu vị trí © OpenStreetMap contributors (giấy phép ODbL).</p>
+</main><footer th:replace="~{fragments :: footer}"></footer></body></html>

@@ -23,7 +23,8 @@ public class DatabaseSetup implements ApplicationRunner {
     private final com.rvt.ticket.booking.FleetService fleet;
     private final com.rvt.ticket.booking.AdminIdentityService admins;
     private final com.rvt.ticket.booking.LegacyOrderService legacy;
-    public DatabaseSetup(JdbcTemplate db,TicketService tickets,com.rvt.ticket.booking.PlaceService places,com.rvt.ticket.booking.FleetService fleet,com.rvt.ticket.booking.AdminIdentityService admins,com.rvt.ticket.booking.LegacyOrderService legacy) { this.db=db;this.tickets=tickets;this.places=places;this.fleet=fleet;this.admins=admins;this.legacy=legacy; }
+    private final com.rvt.ticket.booking.StationService stations;
+    public DatabaseSetup(JdbcTemplate db,TicketService tickets,com.rvt.ticket.booking.PlaceService places,com.rvt.ticket.booking.FleetService fleet,com.rvt.ticket.booking.AdminIdentityService admins,com.rvt.ticket.booking.LegacyOrderService legacy,com.rvt.ticket.booking.StationService stations) { this.db=db;this.tickets=tickets;this.places=places;this.fleet=fleet;this.admins=admins;this.legacy=legacy; this.stations=stations;}
     @Override @Transactional(rollbackFor = Exception.class)
     public void run(ApplicationArguments args) throws Exception {
         // Migration chỉ chạy khi nội dung các file (hoặc danh mục địa điểm) thay đổi so với lần trước,
@@ -37,7 +38,7 @@ public class DatabaseSetup implements ApplicationRunner {
         }
         legacy.importAll();
         admins.seed();
-        if(changed)places.seed(); else places.linkTrips();
+        if(changed){places.seed();places.seedAreas();stations.seed();} else places.linkTrips();
         fleet.seed();
         seedLayoutShowcase();
         tickets.closeInvalidTrips();
@@ -56,13 +57,15 @@ public class DatabaseSetup implements ApplicationRunner {
     }
     private static final List<String> EXECUTE_SCRIPTS=List.of("V2__orders_and_layout.sql","V3__operations.sql","V4__fleet_and_places.sql","V5__admin_workspace.sql",
         "V6__rvt_balance_and_passengers.sql","V7__product_workflows.sql","V8__passenger_profile.sql","V9__vnpay_sandbox.sql","V10__operational_integrity.sql");
-    private static final List<String> BATCH_SCRIPTS=List.of("V11__appointments_roles.sql","V12__search_index.sql","V13__booking_features.sql");
+    private static final List<String> BATCH_SCRIPTS=List.of("V11__appointments_roles.sql","V12__search_index.sql","V13__booking_features.sql","V14__local_areas.sql");
     private static String script(String file) throws java.io.IOException {return new ClassPathResource("db/migration/"+file).getContentAsString(StandardCharsets.UTF_8);}
     private static String fingerprint() throws Exception {
         var digest=java.security.MessageDigest.getInstance("SHA-256");
         for(String file:EXECUTE_SCRIPTS)digest.update(script(file).getBytes(StandardCharsets.UTF_8));
         for(String file:BATCH_SCRIPTS)digest.update(script(file).getBytes(StandardCharsets.UTF_8));
         digest.update(new ClassPathResource("data/vietnam-places.tsv").getContentAsByteArray());
+        digest.update(new ClassPathResource("data/vietnam-areas.tsv").getContentAsByteArray());
+        digest.update(new ClassPathResource("data/vietnam-bus-stations.tsv").getContentAsByteArray());
         return java.util.HexFormat.of().formatHex(digest.digest());
     }
     /** Chạy cả lô T-SQL và duyệt hết kết quả, để lỗi ở câu lệnh sau không bị JDBC bỏ qua im lặng. */

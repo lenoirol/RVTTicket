@@ -1,0 +1,65 @@
+# Bến xe dùng trong lịch chạy. Địa chỉ và tọa độ lấy từ OpenStreetMap (© OpenStreetMap contributors, ODbL), tra ngày 12/11/2026.
+# Độ chính xác: OSM = khớp bến trên OpenStreetMap; CAN_KIEM_TRA = có điểm trên bản đồ nhưng cần đối chiếu; GAN_DUNG = chỉ ở mức trung tâm thành phố.
+# tên bến | thành phố có chuyến | địa chỉ | vĩ độ | kinh độ | độ chính xác | tên trên bản đồ
+Bến xe Buôn Ma Thuột|Buôn Ma Thuột|Nguyễn Chí Thanh, Phường Tân An, Buôn Ma Thuột, Tỉnh Đắk Lắk|12.700781|108.074737|OSM|Bến xe khách phía bắc Thành phố Buôn Ma Thuột
+Bến xe Bạc Liêu|Bạc Liêu|Khu vực trung tâm Bạc Liêu (vị trí gần đúng, cần kiểm tra)|9.289391|105.708535|GAN_DUNG|
+Bến xe Bảo Lộc|Bảo Lộc|Khu vực trung tâm Bảo Lộc (vị trí gần đúng, cần kiểm tra)|11.546082|107.809496|GAN_DUNG|
+Bến xe Bắc Giang|Bắc Giang|Đường Xương Giang, Phường Bắc Giang, Bắc Ninh, Thành phố Bắc Ninh|21.286552|106.20515|OSM|Bến xe khách Bắc Giang
+Bến xe Bến Tre|Bến Tre|Quốc lộ 60, Phường Sơn Đông, Tỉnh Vĩnh Long|10.266967|106.359841|OSM|Bến xe Bến Tre
+Bến xe Cao Bằng|Cao Bằng|Quốc lộ 3;34, Phường Thục Phán, Cao Bằng, Tỉnh Cao Bằng|22.680845|106.202108|OSM|Bến xe khách liên tỉnh Thành phố Cao Bằng
+Bến xe Cao Lãnh|Cao Lãnh|Võ Thị Sáu, Khu phố Hưng Thịnh, Phường Cao Lãnh, Cao Lãnh, Tỉnh Đồng Tháp|10.455804|105.63809|OSM|Bến xe Cao Lãnh
+Bến xe Châu Đốc|Châu Đốc|Quốc lộ 91, Phường Châu Đốc, Châu Đốc, Tỉnh An Giang|10.694912|105.13709|OSM|Bến xe Châu Đốc
+Bến xe Cà Mau|Cà Mau|Lý Thường Kiệt, Khóm 16, Cà Mau, Phường Tân Thành, Tỉnh Cà Mau|9.17577|105.170944|OSM|Bến xe Cà Mau
+Bến xe Trung tâm Cần Thơ|Cần Thơ|Trần Hoàng Na, Khu vực 1, Phường Cái Răng, Thành phố Cần Thơ|10.005344|105.771312|OSM|Bến xe Trung tâm tp.Cần Thơ
+Bến xe Cẩm Phả|Cẩm Phả|Phố Nguyễn Khuyến, Cẩm Đông, Phường Cẩm Phả, Thành phố Quảng Ninh|21.004957|107.289386|OSM|Bến xe khách Trung tâm Cẩm Phả
+Bến xe Gia Nghĩa|Gia Nghĩa|Đường 23 Tháng 3, Tổ dân phố 12, Phường Đông Gia Nghĩa, Gia Nghĩa, Phường Bắc Gia Nghĩa, Tỉnh Lâm Đồng|12.002755|107.691637|OSM|Bến Xe Khách Gia Nghĩa
+Bến xe phía Nam Huế|Huế|An Dương Vương, Tổ dân phố 10, Phường An Cựu, Hương Thuỷ, Thành phố Huế|16.450763|107.606019|OSM|Bến xe phía Nam
+Bến xe Hà Giang|Hà Giang|QL.2, Phường Hà Giang 1, Hà Giang, Tỉnh Tuyên Quang|22.801796|104.977731|OSM|Bến xe Thành phố Hà Giang
+Bến xe Giáp Bát|Hà Nội|Đường Giải Phóng, Giáp Thất, Kẻ Sét, Phường Hoàng Mai, Hà Nội|20.980603|105.84215|OSM|Bến xe Giáp Bát
+Bến xe Mỹ Đình|Hà Nội|20, Đường Phạm Hùng, Xuân Phong, Phường Từ Liêm, Hà Nội|21.028267|105.777519|OSM|Bến xe Mỹ Đình
+Bến xe Nước Ngầm|Hà Nội|1, Đường Ngọc Hồi, Phường Yên Sở, Yên Ngưu, Hà Nội|20.965103|105.843176|OSM|Bến xe Nước Ngầm
+Bến xe Hà Tĩnh|Hà Tĩnh|Nguyễn Hằng Chi, Tổ dân phố 3, Phường Thành Sen, Hà Tĩnh|18.33913|105.894308|OSM|Bến xe Hà Tĩnh
+Bến xe Hòa Bình|Hòa Bình|Đường Trần Hưng Đạo, Phương Lâm, Phường Hòa Bình, Tỉnh Phú Thọ|20.817354|105.342807|OSM|bến xe Hoà Bình
+Bến xe Hưng Yên|Hưng Yên|Phố Lý Tự Trọng, Tỉnh Hưng Yên, Hiến Nam, Liên Phương|20.666051|106.057824|OSM|Bến xe Hưng Yên
+Bến xe Bãi Cháy|Hạ Long|Quốc lộ 18, Giếng Đáy, Phường Việt Hưng, Thành phố Quảng Ninh|20.972996|107.013722|OSM|Bến xe Bãi Cháy
+Bến xe Niệm Nghĩa|Hải Phòng|Phố Trần Nguyên Hãn, Trần Nguyên Hãn, Phường An Biên, Thành phố Hải Phòng|20.84188|106.667975|OSM|Bến xe Niệm Nghĩa
+Bến xe Kon Tum|Kon Tum|Đường Phan Đình Phùng, Tổ dân phố 5, Phường Kon Tum, Kon Tum, Tỉnh Quảng Ngãi|14.367274|107.993979|OSM|Bến xe KonTum
+Bến xe Long Xuyên|Long Xuyên|Phạm Cự Lượng, Phường Long Xuyên, Long Xuyên, Tỉnh An Giang|10.358331|105.434268|OSM|Bến xe Long Xuyên
+Bến xe Lào Cai|Lào Cai|QL.4E, Phường Cam Đường, Thành phố Lào Cai, Tỉnh Lào Cai|22.425302|104.030221|OSM|Bến xe Trung tâm Lào Cai
+Bến xe Lạng Sơn|Lạng Sơn|Đường Na Làng, Phường Kỳ Lừa, Lạng Sơn, Tỉnh Lạng Sơn|21.873211|106.761172|OSM|Bến xe khách phía Bắc Thành phố Lạng Sơn
+Bến xe Móng Cái|Móng Cái|Yết Kiêu, Khu 2, Phường Móng Cái 2, Móng Cái, Thành phố Quảng Ninh|21.530372|107.958331|OSM|Bến xe khách Móng Cái
+Bến xe Mộc Châu|Mộc Châu|Khu vực trung tâm Mộc Châu (vị trí gần đúng, cần kiểm tra)|20.870279|104.629229|GAN_DUNG|
+Bến xe Mỹ Tho|Mỹ Tho|Hồ Văn Nhánh, Phường Trung An, Tỉnh Đồng Tháp|10.373423|106.34629|OSM|Bến xe Tiền Giang
+Bến xe Nam Định|Nam Định|Phố Phúc Châu, Phường Đông A, Tỉnh Ninh Bình|20.436202|106.150338|OSM|Bến xe khách Nam Định
+Bến xe phía Nam Nha Trang|Nha Trang|23 Tháng 10, Phường Tây Nha Trang, Nha Trang, Khánh Hòa|12.258395|109.134856|CAN_KIEM_TRA|Khong. Bến xe phía Nam Nha Trang
+Bến xe Ninh Bình|Ninh Bình|207, Đường Nguyễn Công Trứ, Vân Giang, P. Hoa Lư, Phường Hoa Lư, Tỉnh Ninh Bình|20.25045|105.9762|OSM|Bến xe khách Ninh Bình
+Bến xe Phan Rang–Tháp Chàm|Phan Rang–Tháp Chàm|52, Lê Duẩn, Phường Bảo An, Phan Rang – Tháp Chàm, Khánh Hòa|11.586035|108.986448|OSM|Bến xe khách Ninh Thuận
+Bến xe Phan Thiết|Phan Thiết|Phường Phan Thiết, Phan Thiết, Tỉnh Lâm Đồng|10.939769|108.102867|CAN_KIEM_TRA|Trung tâm mua vé của bến xe
+Bến xe Phủ Lý|Phủ Lý|Đường Lê Đức Thọ, P. Phủ Lý, Phường Phủ Lý, Tỉnh Ninh Bình|20.538442|105.944882|OSM|Bến xe Trung tâm Phủ Lý
+Bến xe Pleiku|Pleiku|Lý Nam Đế, Làng Ngó, Phường Hội Phú, Pleiku, Tỉnh Gia Lai|13.965914|108.021221|OSM|Bến xe Pleiku
+Bến xe Quy Nhơn|Quy Nhơn|Quốc lộ 1D, Khu phố 14, Phường Quy Nhơn Nam, Quy Nhơn, Tỉnh Gia Lai|13.75334|109.208907|CAN_KIEM_TRA|Bến xe
+Bến xe Quảng Ngãi|Quảng Ngãi|Đinh Tiên Hoàng, Tổ dân phố 11, Phường Cẩm Thành, Quảng Ngãi, Tỉnh Quảng Ngãi|15.107484|108.819131|OSM|Bến Xe Quảng Ngãi
+Bến xe Rạch Giá|Rạch Giá|Mai Thị Hồng Hạnh, Sua Đũa, Xã Bình An, Tỉnh An Giang|9.944034|105.129369|CAN_KIEM_TRA|Bến xe Kiên Giang
+Bến xe Sa Pa|Sa Pa|Đường Lương Định Của, Sapa, Phường Sa Pa, Tỉnh Lào Cai|22.339516|103.853539|CAN_KIEM_TRA|Bến xe khách Sa Pa
+Bến xe Sóc Trăng|Sóc Trăng|Khu vực trung tâm Sóc Trăng (vị trí gần đúng, cần kiểm tra)|9.610041|105.984266|GAN_DUNG|
+Bến xe Sơn La|Sơn La|Đường Lê Duẩn, Phường Tô Hiệu, Xã Chiềng Mung, Tỉnh Sơn La|21.301407|103.943443|OSM|Bến xe khách Sơn La
+Bến xe Miền Tây|TP. Hồ Chí Minh|Đường Kinh Dương Vương, Khu phố 21, Phường An Lạc, Thành phố Hồ Chí Minh|10.740127|106.619401|OSM|Bến xe Miền Tây
+Bến xe Miền Đông|TP. Hồ Chí Minh|Đường Đinh Bộ Lĩnh, Khu phố 48, Phường Bình Thạnh, Thành phố Hồ Chí Minh|10.814875|106.711471|CAN_KIEM_TRA|Bến Xe Miền Đông (Bến Thanh)
+Bến xe Tam Kỳ|Tam Kỳ|Quốc lộ 1, Phường Bàn Thạch, Tam Kỳ, Thành phố Đà Nẵng|15.586615|108.465371|OSM|Bến xe Tam Kỳ - 1 Phan Bội Châu
+Bến xe phía Bắc Thanh Hóa|Thanh Hóa|Đường Dương Đình Nghệ, Đông Thọ, Phường Hàm Rồng, Tỉnh Thanh Hóa|19.820239|105.773788|OSM|Bến xe phía Bắc
+Bến xe Thái Bình|Thái Bình|Phố Lý Bôn, Phường Trần Hưng Đạo, Tỉnh Hưng Yên|20.449012|106.334473|OSM|Bến xe khách Trung tâm Thái Bình
+Bến xe Thái Nguyên|Thái Nguyên|Đường Thống Nhất, Tân Lập, Phường Tích Lương, Thái Nguyên, Tỉnh Thái Nguyên|21.576131|105.828362|OSM|Bến xe khánh trung tâm thành phố Thái Nguyên
+Bến xe Trà Vinh|Trà Vinh|Nguyễn Chí Thanh, Khóm 15, Trà Vinh, Phường Trà Vinh, Tỉnh Vĩnh Long|9.890346|106.344371|OSM|Ben Xe Tra Vinh
+Bến xe Tuy Hòa|Tuy Hòa|Đại lộ Nguyễn Tất Thành, Phú Vang, Phường Tuy Hòa, Tuy Hòa, Tỉnh Đắk Lắk|13.092588|109.29421|OSM|Bến xe Liên tỉnh Phú Yên
+Bến xe Tuyên Quang|Tuyên Quang|Khu vực trung tâm Tuyên Quang (vị trí gần đúng, cần kiểm tra)|21.820195|105.19229|GAN_DUNG|
+Bến xe Tây Ninh|Tây Ninh|Trưng Nữ Vương, Khu phố 18, Thành phố Tây Ninh, Phường Tân Ninh, Tỉnh Tây Ninh|11.310226|106.087778|OSM|Bến xe Tây Ninh
+Bến xe phía Bắc Vinh|Vinh|Quốc lộ 1, Phường Vinh Hưng, Tỉnh Nghệ An|18.729678|105.658978|OSM|Bến xe Bắc Vinh
+Bến xe Việt Trì|Việt Trì|Khu vực trung tâm Việt Trì (vị trí gần đúng, cần kiểm tra)|21.332387|105.366022|GAN_DUNG|
+Bến xe Vĩnh Long|Vĩnh Long|Phan Đình Phùng, Phường Tân Hạnh, Tỉnh Vĩnh Long|10.238379|105.957562|OSM|Bến xe Vĩnh Long
+Bến xe Vũng Tàu|Vũng Tàu|192, Nam Kỳ Khởi Nghĩa, Khu phố 14, Phường Vũng Tàu, Thành phố Hồ Chí Minh|10.350447|107.087048|OSM|Bến xe Vũng Tàu
+Bến xe Điện Biên Phủ|Điện Biên Phủ|QL.12, Thanh Bình, Điện Biên Phủ, Phường Điện Biên Phủ, Tỉnh Điện Biên|21.417606|103.006861|OSM|Bến xe khách Điện Biên Phủ
+Bến xe Liên tỉnh Đà Lạt|Đà Lạt|01, Tô Hiến Thành, Ấp Tân Lạc, Phường Xuân Hương - Đà Lạt, Đà Lạt, Tỉnh Lâm Đồng|11.926882|108.445514|OSM|Bến Xe Liên Tỉnh
+Bến xe Trung tâm Đà Nẵng|Đà Nẵng|Đường Nguyễn Văn Thái 1, Tổ dân phố Nhơn Hòa 1, Phường An Khê, Thành phố Đà Nẵng|16.05501|108.173357|OSM|Bến Xe Trung Tâm Đà Nẵng
+Bến xe Đông Hà|Đông Hà|Khu vực trung tâm Đông Hà (vị trí gần đúng, cần kiểm tra)|16.802493|107.095338|GAN_DUNG|
+Bến xe Đồng Hới|Đồng Hới|Võ Thị Sáu, P. Đồng Hới, Phường Đồng Hới, Tỉnh Quảng Trị|17.468149|106.604019|OSM|Bến Xe Nam Lý
+Bến xe Đồng Xoài|Đồng Xoài|Đường Phú Riềng Đỏ, Khu phố Tân Xuân 1, Phường Bình Phước, Đồng Xoài, Thành phố Đồng Nai|11.519815|106.894404|CAN_KIEM_TRA|Bến xe Thành Công

@@ -18,7 +18,19 @@ public class TicketService {
     private final LegacyOrderService legacy;
     private final TicketStrategyRegistry strategies;
     private final StopService stops;
-    public TicketService(JdbcTemplate db,PlaceService places,FleetService fleet,WalletService wallet,NotificationService notifications,LegacyOrderService legacy,TicketStrategyRegistry strategies,StopService stops) { this.db=db;this.places=places;this.fleet=fleet;this.wallet=wallet;this.notifications=notifications;this.legacy=legacy;this.strategies=strategies;this.stops=stops; }
+    private final StationService stations;
+    public TicketService(JdbcTemplate db,PlaceService places,FleetService fleet,WalletService wallet,NotificationService notifications,LegacyOrderService legacy,TicketStrategyRegistry strategies,StopService stops,StationService stations) { this.db=db;this.places=places;this.fleet=fleet;this.wallet=wallet;this.notifications=notifications;this.legacy=legacy;this.strategies=strategies;this.stops=stops;this.stations=stations; }
+    /** Địa chỉ và link bản đồ cho điểm đón / trả của đơn: bến xe có thật, văn phòng trung chuyển minh họa, hoặc chỉ có tên. */
+    private void placeDetails(Map<String,Object> order,String prefix,String name,Object stopId){
+        String address=null,map=null;
+        var station=stations.byName(name);
+        if(station.isPresent()){address=(String)station.get().get("DiaChi");map=StationService.mapUrl(station.get());}
+        else if(stopId!=null){
+            var rows=db.queryForList("SELECT DiaChi FROM dbo.DiemDonTra WHERE DiemID=?",String.class,stopId);
+            if(!rows.isEmpty())address=rows.getFirst()+" · văn phòng minh họa của đồ án";
+        }
+        order.put("DiaChi"+prefix,address);order.put("BanDo"+prefix,map);
+    }
     public TicketStrategyRegistry strategies(){return strategies;}
 
     /** Số liệu thật cho trang chủ: chuyến mở bán 7 ngày tới, số tuyến, tỉnh và địa điểm. */
@@ -228,7 +240,14 @@ public class TicketService {
         result.put("MaDonCu",null);result.put("MaDonMoi",null);
         if(result.get("DoiTuDonID")!=null)result.put("MaDonCu",db.queryForObject("SELECT MaDon FROM dbo.DonDatVe WHERE DonDatVeID=?",String.class,result.get("DoiTuDonID")));
         if(result.get("DoiSangDonID")!=null)result.put("MaDonMoi",db.queryForObject("SELECT MaDon FROM dbo.DonDatVe WHERE DonDatVeID=?",String.class,result.get("DoiSangDonID")));
-        result.put("CoMatLuc",Timestamp.valueOf(departure.minusMinutes(strategies.of((String)result.get("LoaiVe")).boardingLeadMinutes())));
+        // Có mặt tại bến trước giờ xe chạy (xe khách 30 phút, tàu 45 phút); nếu chọn điểm trung chuyển thì có mặt đúng giờ đón của điểm đó.
+        int lead=strategies.of((String)result.get("LoaiVe")).boardingLeadMinutes();
+        result.put("PhutCoMat",lead);
+        boolean shuttle=result.get("DiemDonID")!=null&&result.get("GioDonDuKien") instanceof Timestamp;
+        result.put("DonTrungChuyen",shuttle);
+        result.put("CoMatLuc",shuttle?result.get("GioDonDuKien"):Timestamp.valueOf(departure.minusMinutes(lead)));
+        placeDetails(result,"Don",(String)result.get("DiemDon"),result.get("DiemDonID"));
+        placeDetails(result,"Tra",(String)result.get("DiemTra"),result.get("DiemTraID"));
         result.put("payments",db.queryForList("SELECT p.MaGiaoDich,p.SoTien,p.PhuongThuc,p.TrangThai,p.ThoiGian,p.HoanLuc,v.MaCho FROM dbo.ThanhToan p JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=p.DangKyID JOIN dbo.DangKyVe v ON v.DangKyID=p.DangKyID WHERE d.DonDatVeID=? ORDER BY p.ThanhToanID",result.get("DonDatVeID")));
         return result;
     }

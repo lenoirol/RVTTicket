@@ -9,6 +9,8 @@ public final class ViewData {
     public static Map<String,Object> localTime(Map<String,Object> source) {
         var result=new LinkedHashMap<String,Object>(source);
         result.replaceAll((key,value)->value instanceof Timestamp t ? Timestamp.valueOf(t.toLocalDateTime().plusHours(7)) : value);
+        // Mô tả cũ của dữ liệu mẫu ghi 20 phút; quy định hiện tại là có mặt tại bến trước 30 phút.
+        if(result.get("MoTa") instanceof String text&&text.contains("trước giờ khởi hành 20 phút"))result.put("MoTa",text.replace("trước giờ khởi hành 20 phút","trước giờ khởi hành 30 phút"));
         result.put("TenHienThi",source.get("DonViVanChuyen"));
         result.put("TauThamKhao",false);
         result.put("MaChuyenHienThi",com.rvt.ticket.booking.TripIdentity.code(source));
