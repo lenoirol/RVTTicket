@@ -81,18 +81,50 @@ public class FleetService {
         db.update("INSERT dbo.NhatKyThaoTac(NguoiThucHien,HanhDong,DoiTuong) VALUES(?,'LUU_PHUONG_TIEN',?)",actor,form.code());
         return id;
     }
+    /**
+     * Sơ đồ mẫu theo loại xe. Lưới 6 cột, cột 1 là phía ghế tài xế (bên trái), cửa lên xuống bên phải.
+     * Xe giường nằm thường có 3 dãy giường (cột 1, 3, 5) và 2 lối đi; tầng dưới mã A, tầng trên mã B.
+     * Một số xe có hàng cuối 5 giường liền nhau; xe limousine giường phòng có 2 dãy (cột 1 và 5).
+     */
+    public static List<Seat> templateSeats(String model){
+        var list=new ArrayList<Seat>();
+        switch(model){
+            case "seat28"->grid(list,"GHE_NGOI",1,7,new int[]{1,2,4,5},0);
+            case "sleep36"->{grid(list,"GIUONG_NAM",1,6,new int[]{1,3,5},0);grid(list,"GIUONG_NAM",2,6,new int[]{1,3,5},0);}
+            case "sleep41"->{grid(list,"GIUONG_NAM",1,6,new int[]{1,3,5},0);backRow(list,1,7,5);grid(list,"GIUONG_NAM",2,6,new int[]{1,3,5},0);}
+            case "limo24"->{grid(list,"GIUONG_NAM",1,6,new int[]{1,5},0);grid(list,"GIUONG_NAM",2,6,new int[]{1,5},0);}
+            case "boat40"->grid(list,"PHO_THONG",1,10,new int[]{1,2,4,5},2);
+            default->throw new IllegalArgumentException("Không có sơ đồ mẫu "+model);
+        }
+        return list;
+    }
+    private static void grid(List<Seat> list,String kind,int floor,int rows,int[] columns,int vipRows){
+        String prefix=floor==1?"A":"B";
+        for(int row=1;row<=rows;row++)for(int column:columns){
+            boolean vip=row<=vipRows;
+            list.add(new Seat(prefix+String.format("%02d",(int)list.stream().filter(x->x.floor()==floor).count()+1),vip?"VIP":kind,BigDecimal.valueOf(vip?100000:0),floor,row,column));
+        }
+    }
+    /** Hàng cuối xe giường nằm: n giường liền nhau trên toàn bộ chiều ngang (không có lối đi). */
+    private static void backRow(List<Seat> list,int floor,int row,int count){
+        String prefix=floor==1?"A":"B";
+        for(int column=1;column<=count;column++)
+            list.add(new Seat(prefix+String.format("%02d",(int)list.stream().filter(x->x.floor()==floor).count()+1),"GIUONG_NAM",BigDecimal.ZERO,floor,row,column));
+    }
+    private record Template(String code,String name,String model,String type){}
+    private static final List<Template> TEMPLATES=List.of(
+        new Template("RVT-MAU-1","Xe ghế ngồi 28 chỗ · mẫu","seat28","XE_KHACH"),
+        new Template("RVT-MAU-2","Xe giường nằm 36 chỗ · mẫu","sleep36","XE_KHACH"),
+        new Template("RVT-MAU-3","Tàu 40 chỗ · mẫu","boat40","TAU_THUYEN"),
+        new Template("RVT-MAU-4","Xe giường nằm 41 chỗ (hàng cuối 5 giường) · mẫu","sleep41","XE_KHACH"),
+        new Template("RVT-MAU-5","Xe limousine giường phòng 24 chỗ · mẫu","limo24","XE_KHACH"));
     @Transactional(rollbackFor = Exception.class)
     public void seed() throws com.fasterxml.jackson.core.JsonProcessingException {
-        for(int model=0;model<3;model++){
-            String code="RVT-MAU-"+(model+1);
-            if(db.queryForObject("SELECT COUNT(*) FROM dbo.PhuongTien WHERE MaPhuongTien=?",Integer.class,code)>0)continue;
-            boolean sleeper=model==1,boat=model==2;var layout=new ArrayList<Seat>();
-            int floors=sleeper?2:1,rows=boat?10:sleeper?6:7;int[] columns=sleeper?new int[]{1,3,5}:new int[]{1,2,4,5};
-            for(int floor=1;floor<=floors;floor++)for(int row=1;row<=rows;row++)for(int ci=0;ci<columns.length;ci++){
-                boolean vip=boat&&row<=2;String seat=(floor==1?"A":"B")+String.format("%02d",(row-1)*columns.length+ci+1);
-                layout.add(new Seat(seat,boat?(vip?"VIP":"PHO_THONG"):(sleeper?"GIUONG_NAM":"GHE_NGOI"),BigDecimal.valueOf(vip?100000:0),floor,row,columns[ci]));
-            }
-            save(null,new VehicleForm(code,(sleeper?"Xe giường nằm 36 chỗ":boat?"Tàu 40 chỗ":"Xe ghế ngồi 28 chỗ")+" · mẫu","DEMO-"+(model+1),"RVT mẫu",boat?"TAU_THUYEN":"XE_KHACH",true,json.writeValueAsString(layout)),"SYSTEM");
+        int n=0;
+        for(var t:TEMPLATES){
+            n++;
+            if(db.queryForObject("SELECT COUNT(*) FROM dbo.PhuongTien WHERE MaPhuongTien=?",Integer.class,t.code())>0)continue;
+            save(null,new VehicleForm(t.code(),t.name(),"DEMO-"+n,"RVT mẫu",t.type(),true,json.writeValueAsString(templateSeats(t.model()))),"SYSTEM");
         }
     }
 }

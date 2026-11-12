@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Hóa đơn điện tử')}"></head><body><header th:replace="~{fragments :: header('')}"></header>
+<main id="main-content" class="container narrow page">
+<a class="text-link no-print" th:href="@{/don-ve/{code}(code=${order.MaDon})}">← Quay lại đơn vé</a>
+<div th:replace="~{fragments :: messages}"></div>
+<th:block th:if="${invoice==null}">
+<div class="eyebrow">Hóa đơn điện tử</div><h1 class="page-title">Xuất hóa đơn.</h1>
+<p class="muted" th:text="'Đơn '+${order.MaDon}+' · đã thanh toán '+${#numbers.formatDecimal(order.TienSeHoan,0,'POINT',0,'COMMA')}+' ₫. Mỗi đơn xuất một hóa đơn; thông tin người mua không sửa được sau khi xuất.'"></p>
+<form th:action="@{/don-ve/{code}/hoa-don(code=${order.MaDon})}" method="post" class="card stack" data-confirm="Xuất hóa đơn với thông tin đã nhập? Sau khi xuất không sửa được.">
+ <fieldset class="payment-options"><legend>Người mua</legend>
+  <label><input type="radio" name="kind" value="CA_NHAN" checked><span>Cá nhân</span></label>
+  <label><input type="radio" name="kind" value="DON_VI"><span>Công ty / đơn vị (cần mã số thuế)</span></label></fieldset>
+ <label>Họ tên hoặc tên đơn vị<input name="name" maxlength="150" required th:value="${buyerName}"></label>
+ <label>Mã số thuế<input name="taxCode" maxlength="14" pattern="[0-9]{10}(-?[0-9]{3})?" placeholder="Bắt buộc nếu là đơn vị"></label>
+ <label>Địa chỉ<input name="address" maxlength="250" placeholder="Bắt buộc nếu là đơn vị"></label>
+ <label>Email nhận hóa đơn (không bắt buộc)<input type="email" name="email" maxlength="254" th:value="${buyerEmail}"></label>
+ <button class="button orange">Xuất hóa đơn</button>
+ <p class="footnote">Bản thể hiện hóa đơn điện tử của đồ án, dùng để minh họa nghiệp vụ; không gửi lên cơ quan thuế và không có giá trị khấu trừ.</p>
+</form></th:block>
+<article class="card invoice" th:if="${invoice!=null}" th:insert="~{invoice :: sheet(${invoice},${order.MaDon},${order.NoiDi}+' → '+${order.NoiDen},${order.KhoiHanh},${#lists.size(order.tickets)},${order.TrangThai})}"></article>
+<p class="no-print" th:if="${invoice!=null}"><button type="button" class="button outline" onclick="window.print()">In / Lưu PDF</button></p>
+</main><footer th:replace="~{fragments :: footer}"></footer>
+<th:block th:if="false"><div th:fragment="sheet(i,code,route,departure,count,state)">
+ <header class="invoice-head"><div><strong>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</strong><small>(Bản thể hiện của hóa đơn điện tử)</small></div>
+  <dl><div><dt>Ký hiệu</dt><dd th:text="${i.KyHieu}"></dd></div><div><dt>Số</dt><dd th:text="${i.SoHoaDon}"></dd></div><div><dt>Ngày lập</dt><dd th:text="${#dates.format(i.NgayLap,'dd/MM/yyyy HH:mm')}"></dd></div><div><dt>Mã tra cứu</dt><dd><strong th:text="${i.MaTraCuu}"></strong></dd></div></dl></header>
+ <p class="notice small-text" th:if="${state=='DA_HUY'}">Đơn vé của hóa đơn này đã hủy hoặc đã đổi sang đơn khác. Hóa đơn chỉ còn giá trị tham khảo.</p>
+ <section class="invoice-parties"><div><small>Đơn vị bán</small><strong>RVT Ticket (đồ án môn học)</strong><span>Dịch vụ vận tải hành khách xe khách và tàu thuyền</span></div>
+  <div><small>Người mua</small><strong th:text="${i.TenNguoiMua}"></strong><span th:if="${i.MaSoThue!=null}" th:text="'Mã số thuế: '+${i.MaSoThue}"></span><span th:if="${i.DiaChi!=null}" th:text="'Địa chỉ: '+${i.DiaChi}"></span><span th:if="${i.Email!=null}" th:text="'Email: '+${i.Email}"></span></div></section>
+ <div class="table-scroll"><table><thead><tr><th>Nội dung</th><th>Số lượng</th><th>Thành tiền</th></tr></thead><tbody>
+  <tr><td th:text="'Vé hành khách '+${route}+' · khởi hành '+${#dates.format(departure,'HH:mm dd/MM/yyyy')}+' · đơn '+${code}"></td><td th:text="${count}+' vé'"></td><td th:text="${#numbers.formatDecimal(i.TienTruocThue,0,'POINT',0,'COMMA')}+' ₫'"></td></tr></tbody>
+  <tfoot><tr><td colspan="2">Cộng tiền hàng</td><td th:text="${#numbers.formatDecimal(i.TienTruocThue,0,'POINT',0,'COMMA')}+' ₫'"></td></tr>
+   <tr><td colspan="2" th:text="'Thuế GTGT ('+${i.ThueSuat.stripTrailingZeros().toPlainString()}+'%)'"></td><td th:text="${#numbers.formatDecimal(i.TienThue,0,'POINT',0,'COMMA')}+' ₫'"></td></tr>
+   <tr><th colspan="2">Tổng thanh toán</th><th th:text="${#numbers.formatDecimal(i.TongThanhToan,0,'POINT',0,'COMMA')}+' ₫'"></th></tr></tfoot></table></div>
+ <p class="footnote">Tra cứu lại tại trang Tra cứu hóa đơn bằng mã tra cứu. Bản thể hiện mô phỏng cho đồ án, không có giá trị khấu trừ thuế.</p>
+</div></th:block>
+</body></html>

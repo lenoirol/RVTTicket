@@ -21,7 +21,7 @@ class WalletConcurrencyIntegrationTests {
     Fixture fixture(){return new TransactionTemplate(manager).execute(tx->{
         String key=UUID.randomUUID().toString().replace("-","").substring(0,10),name="rvt_qa_"+key;accounts.register(new RegistrationForm(name,"QA_Wallet_123","RVT kiểm thử đồng thời","0900000000"));
         var f=new TripForm();f.setCode("RVT-QA-"+key.toUpperCase());f.setOperator("RVT QA");f.setFrom("Điểm QA đi");f.setTo("Điểm QA đến");f.setRows(1);f.setPrice(BigDecimal.valueOf(315000));f.setDeparture(tickets.databaseNow().plusHours(7).plusDays(4));f.setArrival(f.getDeparture().plusHours(2));int id=TestTrips.open(tickets,db,f);
-        String seed=tickets.book(id,booking("A01"),name);tickets.pay(seed,"0900000000");tickets.cancel(seed,"0900000000");
+        String seed=tickets.book(id,booking("A01"),name);tickets.pay(seed,"0900000000");tickets.adminCancelOrder(seed,"Tạo số dư kiểm thử","admin");
         return new Fixture(id,name,f.getCode(),tickets.book(id,booking("A02"),name),tickets.book(id,booking("A03"),name));
     });}
     BookingForm booking(String seat){var f=new BookingForm();f.setName("RVT QA");f.setPhone("0900000000");var p=new BookingForm.Passenger();p.setName("Hành khách QA");p.setSeat(seat);p.setLuggage(BigDecimal.ZERO);f.getPassengers().add(p);return f;}
@@ -41,7 +41,7 @@ class WalletConcurrencyIntegrationTests {
         }finally{cleanupTrip(secondTrip);cleanup(f);}
     }
     @Test void simultaneousCancellationCreditsOnlyOnce() throws Exception{
-        var f=fixture();try{assertTrue(pay(f,f.first()));concurrent(()->{tickets.cancel(f.first(),"0900000000");return true;},()->{tickets.cancel(f.first(),"0900000000");return true;});assertEquals(0,new BigDecimal("315000").compareTo(wallet.balance(f.username())));assertEquals(3,wallet.history(f.username(),1).size());}finally{cleanup(f);}
+        var f=fixture();try{assertTrue(pay(f,f.first()));concurrent(()->{tickets.cancel(f.first(),"0900000000");return true;},()->{tickets.cancel(f.first(),"0900000000");return true;});assertEquals(0,WalletPassengerIntegrationTests.afterFee(new BigDecimal("315000")).compareTo(wallet.balance(f.username())));assertEquals(3,wallet.history(f.username(),1).size());}finally{cleanup(f);}
     }
     @Test void simultaneousDuplicateBookingCreatesOnlyOneOrder() throws Exception{
         var f=fixture();try{

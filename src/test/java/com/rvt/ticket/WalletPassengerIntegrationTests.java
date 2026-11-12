@@ -29,12 +29,16 @@ class WalletPassengerIntegrationTests {
     BookingForm booking(String... seats){var f=new BookingForm();f.setName("Khách ví");f.setPhone("0900000000");for(String seat:seats){var p=new BookingForm.Passenger();p.setSeat(seat);p.setName("Hành khách "+seat);p.setBirthDate(LocalDate.of(1985,1,1));p.setDocument("012345678901");p.setLuggage(BigDecimal.ZERO);f.getPassengers().add(p);}return f;}
     BigDecimal amount(String code){return (BigDecimal)tickets.order(code,"0900000000").get("TongTien");}
     void money(BigDecimal expected,BigDecimal actual){assertEquals(0,expected.compareTo(actual));}
+    /** Khách tự hủy khi còn từ 24 giờ trở lên: phí 10% theo mốc của xe khách, phần còn lại hoàn vào số dư. */
+    static BigDecimal afterFee(BigDecimal paid){return paid.subtract(com.rvt.ticket.booking.FarePolicy.cancellationFee(paid,new BigDecimal("0.10")));}
+
     @Test void refundThenPayWithBalanceAndRefundAgainIsIdempotent(){
         String name=customer();int id=trip(false);String first=tickets.book(id,booking("A01","A02"),name);BigDecimal total=amount(first);
-        money(BigDecimal.ZERO,wallet.balance(name));tickets.pay(first,"0900000000");tickets.cancel(first,"0900000000");tickets.cancel(first,"0900000000");money(total,wallet.balance(name));assertEquals(1,wallet.history(name,1).size());
+        money(BigDecimal.ZERO,wallet.balance(name));tickets.pay(first,"0900000000");tickets.adminCancelOrder(first,"Tạo số dư kiểm thử","admin");tickets.adminCancelOrder(first,"Lặp lại","admin");money(total,wallet.balance(name));assertEquals(1,wallet.history(name,1).size());
         String second=tickets.book(id,booking("A03","A04"),name);tickets.pay(second,"0900000000","RVT",name);tickets.pay(second,"0900000000","RVT",name);money(BigDecimal.ZERO,wallet.balance(name));assertEquals(2,wallet.history(name,1).size());
         assertEquals(2,db.queryForObject("SELECT COUNT(*) FROM dbo.ThanhToan p JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=p.DangKyID JOIN dbo.DonDatVe o ON o.DonDatVeID=d.DonDatVeID WHERE o.MaDon=? AND p.PhuongThuc='SO_DU_RVT'",Integer.class,second));
-        tickets.cancel(second,"0900000000");money(total,wallet.balance(name));assertEquals(3,wallet.history(name,1).size());
+        tickets.cancel(second,"0900000000");tickets.cancel(second,"0900000000");money(afterFee(total),wallet.balance(name));assertEquals(3,wallet.history(name,1).size());
+        money(total.subtract(afterFee(total)),(BigDecimal)tickets.order(second,"0900000000").get("PhiHuy"));
     }
     @Test void insufficientFundsAndWrongOwnerDoNotChargeOrConfirm(){
         String name=customer(),other=customer();String code=tickets.book(trip(false),booking("A01"),name);
@@ -43,10 +47,10 @@ class WalletPassengerIntegrationTests {
         assertEquals(0,db.queryForObject("SELECT COUNT(*) FROM dbo.ThanhToan p JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=p.DangKyID JOIN dbo.DonDatVe o ON o.DonDatVeID=d.DonDatVeID WHERE o.MaDon=?",Integer.class,code));
     }
     @Test void cancelUnpaidDoesNotInventBalance(){String name=customer();String code=tickets.book(trip(false),booking("A01"),name);tickets.cancel(code,"0900000000");money(BigDecimal.ZERO,wallet.balance(name));assertTrue(wallet.history(name,1).isEmpty());}
-    @Test void refundIncludesThePaidLuggageFee(){String name=customer();var f=booking("A01");f.getPassengers().getFirst().setLuggage(BigDecimal.valueOf(26));String code=tickets.book(trip(false),f,name);tickets.pay(code,"0900000000");tickets.cancel(code,"0900000000");money(amount(code),wallet.balance(name));assertTrue(wallet.balance(name).compareTo(BigDecimal.valueOf(315000))>0);}
-    @Test void cancelInside24HoursRejectedButAdminTripCancellationRefunds(){
+    @Test void refundIncludesThePaidLuggageFee(){String name=customer();var f=booking("A01");f.getPassengers().getFirst().setLuggage(BigDecimal.valueOf(26));String code=tickets.book(trip(false),f,name);tickets.pay(code,"0900000000");tickets.cancel(code,"0900000000");money(afterFee(amount(code)),wallet.balance(name));assertTrue(wallet.balance(name).compareTo(BigDecimal.valueOf(315000))>0);}
+    @Test void cancelInsideLastTierRejectedButAdminTripCancellationRefunds(){
         String name=customer();int id=trip(false);String code=tickets.book(id,booking("A01"),name);tickets.pay(code,"0900000000");
-        db.update("UPDATE dbo.ChuyenDi SET KhoiHanh=DATEADD(HOUR,23,SYSUTCDATETIME()),DuKienDen=DATEADD(HOUR,26,SYSUTCDATETIME()) WHERE ChuyenDiID=?",id);
+        db.update("UPDATE dbo.ChuyenDi SET KhoiHanh=DATEADD(HOUR,3,SYSUTCDATETIME()),DuKienDen=DATEADD(HOUR,6,SYSUTCDATETIME()) WHERE ChuyenDiID=?",id);
         assertThrows(IllegalArgumentException.class,()->tickets.cancel(code,"0900000000"));money(BigDecimal.ZERO,wallet.balance(name));tickets.cancelTrip(id,"Biển động (kiểm thử)","admin");tickets.cancelTrip(id,"Lặp lại","admin");money(amount(code),wallet.balance(name));assertEquals(1,wallet.history(name,1).size());
         assertTrue(((List<?>)notifications.inbox(name).get("items")).size()>=3);
     }

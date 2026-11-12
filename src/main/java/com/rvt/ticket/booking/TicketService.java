@@ -17,7 +17,9 @@ public class TicketService {
     private final WalletService wallet;private final NotificationService notifications;
     private final LegacyOrderService legacy;
     private final TicketStrategyRegistry strategies;
-    public TicketService(JdbcTemplate db,PlaceService places,FleetService fleet,WalletService wallet,NotificationService notifications,LegacyOrderService legacy,TicketStrategyRegistry strategies) { this.db=db;this.places=places;this.fleet=fleet;this.wallet=wallet;this.notifications=notifications;this.legacy=legacy;this.strategies=strategies; }
+    private final StopService stops;
+    public TicketService(JdbcTemplate db,PlaceService places,FleetService fleet,WalletService wallet,NotificationService notifications,LegacyOrderService legacy,TicketStrategyRegistry strategies,StopService stops) { this.db=db;this.places=places;this.fleet=fleet;this.wallet=wallet;this.notifications=notifications;this.legacy=legacy;this.strategies=strategies;this.stops=stops; }
+    public TicketStrategyRegistry strategies(){return strategies;}
 
     /** Số liệu thật cho trang chủ: chuyến mở bán 7 ngày tới, số tuyến, tỉnh và địa điểm. */
     /** Trang chủ: số liệu tổng quan lưu 60 giây, bảng giờ 30 giây (chỉ hiển thị; đặt chỗ luôn đọc trực tiếp DB). */
@@ -52,7 +54,11 @@ public class TicketService {
               (SELECT COUNT(*) FROM dbo.ChoNgoi s WHERE s.ChuyenDiID=c.ChuyenDiID
               AND s.TrangThai='SAN_SANG' AND NOT EXISTS (SELECT 1 FROM dbo.DangKyVe v
                 WHERE v.ChuyenDiID=s.ChuyenDiID AND v.MaCho=s.MaCho AND (v.DangChiemCho=1 OR v.TrangThai='DA_SU_DUNG')
-                  AND (v.TrangThai<>'GIU_CHO' OR v.HanThanhToan>SYSUTCDATETIME()))) AS ConCho
+                  AND (v.TrangThai<>'GIU_CHO' OR v.HanThanhToan>SYSUTCDATETIME()))) AS ConCho,
+              CASE WHEN EXISTS(SELECT 1 FROM dbo.ChoNgoi z WHERE z.ChuyenDiID=c.ChuyenDiID AND z.LoaiCho='GIUONG_NAM') THEN 1 ELSE 0 END AS CoGiuong,
+              (SELECT MAX(q.Tang) FROM dbo.SoDoCho q WHERE q.ChuyenDiID=c.ChuyenDiID) AS SoTang,
+              (SELECT COUNT(*) FROM dbo.ChoNgoi s JOIN dbo.SoDoCho q ON q.ChuyenDiID=s.ChuyenDiID AND q.MaCho=s.MaCho WHERE s.ChuyenDiID=c.ChuyenDiID AND q.Tang=1 AND s.TrangThai='SAN_SANG' AND NOT EXISTS (SELECT 1 FROM dbo.DangKyVe v WHERE v.ChuyenDiID=s.ChuyenDiID AND v.MaCho=s.MaCho AND (v.DangChiemCho=1 OR v.TrangThai='DA_SU_DUNG') AND (v.TrangThai<>'GIU_CHO' OR v.HanThanhToan>SYSUTCDATETIME()))) AS ConTangDuoi,
+              (SELECT COUNT(*) FROM dbo.ChoNgoi s JOIN dbo.SoDoCho q ON q.ChuyenDiID=s.ChuyenDiID AND q.MaCho=s.MaCho WHERE s.ChuyenDiID=c.ChuyenDiID AND q.Tang=2 AND s.TrangThai='SAN_SANG' AND NOT EXISTS (SELECT 1 FROM dbo.DangKyVe v WHERE v.ChuyenDiID=s.ChuyenDiID AND v.MaCho=s.MaCho AND (v.DangChiemCho=1 OR v.TrangThai='DA_SU_DUNG') AND (v.TrangThai<>'GIU_CHO' OR v.HanThanhToan>SYSUTCDATETIME()))) AS ConTangTren
             FROM dbo.ChuyenDi c LEFT JOIN dbo.ThongTinChuyen m ON m.ChuyenDiID=c.ChuyenDiID
             WHERE c.TrangThai='MO_BAN' AND c.KhoiHanh>DATEADD(MINUTE,30,SYSUTCDATETIME())
             AND (?='' OR c.LoaiVe=?) AND %s AND %s AND %s
@@ -132,6 +138,8 @@ public class TicketService {
             throw new IllegalArgumentException("Mỗi đơn được đặt từ 1 đến 8 hành khách.");
         String type=(String)trip.get("LoaiVe");
         var rule=rules(type);
+        if(!"XE_KHACH".equals(type)&&(form.getPickupId()!=null||form.getDropoffId()!=null))throw new IllegalArgumentException("Tàu / thuyền chỉ đón và trả tại cảng của chuyến.");
+        var stopChoice=stops.choose(trip(tripId),form.getPickupId(),form.getDropoffId());
         Set<String> chosen=new HashSet<>();
         List<BigDecimal> prices=new ArrayList<>(),fees=new ArrayList<>();
         BigDecimal total=BigDecimal.ZERO;
@@ -160,7 +168,10 @@ public class TicketService {
         if(form.getRequestKey()!=null)db.update("UPDATE dbo.DonDatVe SET YeuCauDat=? WHERE DonDatVeID=?",form.getRequestKey(),order);
         db.update("UPDATE dbo.DonDatVe SET GioHanHuy=24,TaiKhoanID=(SELECT TaiKhoanID FROM dbo.TaiKhoanKhach WHERE TenDangNhap=?) WHERE DonDatVeID=?",username,order);
         var profile=trip(tripId);
-        db.update("UPDATE dbo.DonDatVe SET DiemDonSnapshot=?,DiemTraSnapshot=? WHERE DonDatVeID=?",profile.get("DiemDon"),profile.get("DiemTra"),order);
+        // Điểm đón / trả đã chọn được chụp lại vào đơn và vé xe khách, giờ đón / trả tính theo chênh lệch của điểm.
+        profile.put("DiemDon",StopService.label(stopChoice.pickup()));profile.put("DiemTra",StopService.label(stopChoice.dropoff()));
+        db.update("UPDATE dbo.DonDatVe SET DiemDonSnapshot=?,DiemTraSnapshot=?,DiemDonID=?,DiemTraID=?,GioDonDuKien=?,GioTraDuKien=? WHERE DonDatVeID=?",profile.get("DiemDon"),profile.get("DiemTra"),
+            stopChoice.pickup().id(),stopChoice.dropoff().id(),stopChoice.pickup().time(),stopChoice.dropoff().time(),order);
         for(int i=0;i<form.getPassengers().size();i++) {
             var p=form.getPassengers().get(i);
             int ticket=insert("INSERT dbo.DangKyVe(DangKyCode,KhachHangID,ChuyenDiID,LoaiVe,TenHanhKhach,MaCho,NgayDangKy,HanThanhToan,GiaVe) VALUES(?,?,?,?,?,?,?,?,?)",code+"-"+(i+1),customer,tripId,type,p.getName().strip(),p.getSeat(),Timestamp.valueOf(now),Timestamp.valueOf(deadline),prices.get(i));
@@ -186,19 +197,37 @@ public class TicketService {
         var result=rows.getFirst();
         if("GIU_CHO".equals(result.get("TrangThai")) && !((Timestamp)result.get("HanThanhToan")).toLocalDateTime().isAfter(databaseNow()))
             result.put("TrangThai","HET_HAN");
-        var tickets=db.queryForList("SELECT v.*,ISNULL((SELECT SUM(p.SoTien) FROM dbo.ChiTietPhi p WHERE p.DangKyID=v.DangKyID),0) AS TongPhi,ISNULL(x.KhoiLuongHanhLy,t.KhoiLuongHanhLy) AS HanhLy,t.SoGiayTo FROM dbo.DangKyVe v JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=v.DangKyID LEFT JOIN dbo.VeXeKhach x ON x.DangKyID=v.DangKyID LEFT JOIN dbo.VeTauThuyen t ON t.DangKyID=v.DangKyID WHERE d.DonDatVeID=? ORDER BY v.DangKyID",result.get("DonDatVeID"));
+        var tickets=db.queryForList("SELECT v.*,ISNULL((SELECT SUM(p.SoTien) FROM dbo.ChiTietPhi p WHERE p.DangKyID=v.DangKyID),0) AS TongPhi,ISNULL((SELECT SUM(p.SoTien) FROM dbo.ChiTietPhi p WHERE p.DangKyID=v.DangKyID AND p.MaPhi<>'KHUYEN_MAI'),0) AS PhiHanhLy,ISNULL((SELECT -SUM(p.SoTien) FROM dbo.ChiTietPhi p WHERE p.DangKyID=v.DangKyID AND p.MaPhi='KHUYEN_MAI'),0) AS TienGiamVe,x.DiemDon AS DiemDonVe,t.QuocTich,ISNULL(x.KhoiLuongHanhLy,t.KhoiLuongHanhLy) AS HanhLy,t.SoGiayTo FROM dbo.DangKyVe v JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=v.DangKyID LEFT JOIN dbo.VeXeKhach x ON x.DangKyID=v.DangKyID LEFT JOIN dbo.VeTauThuyen t ON t.DangKyID=v.DangKyID WHERE d.DonDatVeID=? ORDER BY v.DangKyID",result.get("DonDatVeID"));
         result.put("tickets",tickets);
         var now=databaseNow();var departure=((Timestamp)result.get("KhoiHanh")).toLocalDateTime();
         result.put("DaCoHanhKhachLen",tickets.stream().anyMatch(t->"DA_SU_DUNG".equals(t.get("TrangThai"))));
-        result.put("CoTheKhachHuy",("GIU_CHO".equals(result.get("TrangThai"))||("DA_THANH_TOAN".equals(result.get("TrangThai"))&&FarePolicy.refundAllowed(departure,now)))&&!Boolean.TRUE.equals(result.get("DaCoHanhKhachLen")));
+        var strategy=strategies.of((String)result.get("LoaiVe"));
+        var tier=strategy.cancellationTier(java.time.Duration.between(now,departure));
+        boolean boarded=Boolean.TRUE.equals(result.get("DaCoHanhKhachLen"));
+        result.put("CoTheKhachHuy",("GIU_CHO".equals(result.get("TrangThai"))||("DA_THANH_TOAN".equals(result.get("TrangThai"))&&tier!=null))&&!boarded);
+        result.put("MucPhiHuy",tier==null?null:tier.feePercent());
+        // Các mốc phí hủy với thời điểm cụ thể để khách thấy trước.
+        var tiers=new ArrayList<Map<String,Object>>();
+        for(var t:strategy.cancellationTiers())tiers.add(Map.of("Truoc",Timestamp.valueOf(departure.minusHours(t.minHoursBefore())),"Gio",t.minHoursBefore(),"PhanTram",t.feePercent()));
+        result.put("cancellationTiers",tiers);
+        var last=strategy.cancellationTiers().getLast();
+        result.put("CoTheDoiVe","DA_THANH_TOAN".equals(result.get("TrangThai"))&&result.get("DoiTuDonID")==null&&!boarded
+            &&!Set.of("DA_HUY","HOAN_THANH","DA_KHOI_HANH").contains((String)result.get("TrangThaiChuyen"))&&!now.isAfter(departure.minusHours(strategy.exchangeMinHours())));
+        result.put("HanDoiVe",Timestamp.valueOf(departure.minusHours(strategy.exchangeMinHours())));
         result.put("CoTheAdminHuy",Set.of("GIU_CHO","DA_THANH_TOAN").contains((String)result.get("TrangThai"))&&departure.isAfter(now)&&!Boolean.TRUE.equals(result.get("DaCoHanhKhachLen")));
         result.put("TienSeHoan",db.queryForObject("SELECT COALESCE(SUM(p.SoTien),0) FROM dbo.ThanhToan p JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=p.DangKyID WHERE d.DonDatVeID=? AND p.TrangThai='THANH_CONG'",BigDecimal.class,result.get("DonDatVeID")));
         result.put("CoTheCheckin","DA_THANH_TOAN".equals(result.get("TrangThai"))&&!Set.of("DA_HUY","HOAN_THANH").contains((String)result.get("TrangThaiChuyen"))
             &&!now.isBefore(departure.minusHours(2))&&!now.isAfter(departure.plusHours(2))
             &&((Timestamp)result.get("DuKienDen")).toLocalDateTime().isAfter(now));
         result.put("TongGiaVe",tickets.stream().map(t->(BigDecimal)t.get("GiaVe")).reduce(BigDecimal.ZERO,BigDecimal::add));
-        result.put("TongPhi",tickets.stream().map(t->(BigDecimal)t.get("TongPhi")).reduce(BigDecimal.ZERO,BigDecimal::add));
-        result.put("HanHuy",Timestamp.valueOf(departure.minusHours(24)));
+        result.put("TongPhi",tickets.stream().map(t->(BigDecimal)t.get("PhiHanhLy")).reduce(BigDecimal.ZERO,BigDecimal::add));
+        result.put("HanHuy",Timestamp.valueOf(departure.minusHours(last.minHoursBefore())));
+        BigDecimal paid=(BigDecimal)result.get("TienSeHoan");
+        BigDecimal fee="DA_THANH_TOAN".equals(result.get("TrangThai"))&&tier!=null?FarePolicy.cancellationFee(paid,tier.feeRate()):BigDecimal.ZERO;
+        result.put("PhiHuyDuKien",fee);result.put("TienHoanDuKien",paid.subtract(fee));
+        result.put("MaDonCu",null);result.put("MaDonMoi",null);
+        if(result.get("DoiTuDonID")!=null)result.put("MaDonCu",db.queryForObject("SELECT MaDon FROM dbo.DonDatVe WHERE DonDatVeID=?",String.class,result.get("DoiTuDonID")));
+        if(result.get("DoiSangDonID")!=null)result.put("MaDonMoi",db.queryForObject("SELECT MaDon FROM dbo.DonDatVe WHERE DonDatVeID=?",String.class,result.get("DoiSangDonID")));
         result.put("CoMatLuc",Timestamp.valueOf(departure.minusMinutes(strategies.of((String)result.get("LoaiVe")).boardingLeadMinutes())));
         result.put("payments",db.queryForList("SELECT p.MaGiaoDich,p.SoTien,p.PhuongThuc,p.TrangThai,p.ThoiGian,p.HoanLuc,v.MaCho FROM dbo.ThanhToan p JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=p.DangKyID JOIN dbo.DangKyVe v ON v.DangKyID=p.DangKyID WHERE d.DonDatVeID=? ORDER BY p.ThanhToanID",result.get("DonDatVeID")));
         return result;
@@ -243,15 +272,18 @@ public class TicketService {
         if(!"GIU_CHO".equals(o.get("TrangThai")) && !"DA_THANH_TOAN".equals(o.get("TrangThai")))
             throw new IllegalArgumentException("Đơn không còn có thể hủy.");
         ReservationState.require(o.get("TrangThai"),ReservationState.CANCELLED); // CREATED/CONFIRMED → CANCELLED
-        if(!FarePolicy.refundAllowed(((Timestamp)o.get("KhoiHanh")).toLocalDateTime(),databaseNow()) && "DA_THANH_TOAN".equals(o.get("TrangThai")))
-            throw new IllegalArgumentException("Vé đã thanh toán chỉ được hủy trước giờ khởi hành ít nhất 24 giờ.");
+        var tier=strategies.of((String)o.get("LoaiVe")).cancellationTier(java.time.Duration.between(databaseNow(),((Timestamp)o.get("KhoiHanh")).toLocalDateTime()));
+        if(tier==null && "DA_THANH_TOAN".equals(o.get("TrangThai")))
+            throw new IllegalArgumentException("Đơn đã quá hạn hủy vé (trước khởi hành "+strategies.of((String)o.get("LoaiVe")).cancellationTiers().getLast().minHoursBefore()+" giờ).");
         if(db.queryForObject("SELECT COUNT(*) FROM dbo.DangKyVe v JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=v.DangKyID WHERE d.DonDatVeID=? AND v.TrangThai='DA_SU_DUNG'",Integer.class,o.get("DonDatVeID"))>0)
             throw new IllegalArgumentException("Đơn đã có hành khách lên xe/tàu, không thể hủy.");
-        wallet.refund(o);
+        BigDecimal paid=(BigDecimal)o.get("TienSeHoan");
+        BigDecimal fee=tier==null?BigDecimal.ZERO:FarePolicy.cancellationFee(paid,tier.feeRate());
+        wallet.refundPartial(o,paid.subtract(fee),fee);
         db.update("UPDATE v SET TrangThai='DA_HUY',DangChiemCho=0 FROM dbo.DangKyVe v JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=v.DangKyID WHERE d.DonDatVeID=? AND v.TrangThai IN ('GIU_CHO','DA_THANH_TOAN')",o.get("DonDatVeID"));
         db.update("UPDATE t SET TrangThai='DA_HOAN',HoanLuc=SYSUTCDATETIME() FROM dbo.ThanhToan t JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=t.DangKyID WHERE d.DonDatVeID=? AND t.TrangThai='THANH_CONG'",o.get("DonDatVeID"));
-        db.update("UPDATE dbo.DonDatVe SET TrangThai='DA_HUY',HuyLuc=SYSUTCDATETIME(),LyDoHuy=? WHERE DonDatVeID=?",reason.isBlank()?"Khách hủy đơn":reason.strip(),o.get("DonDatVeID"));
-        notifications.order(o,"CANCEL","Đơn vé đã hủy","Đã giải phóng chỗ. Số tiền đã thanh toán được hoàn 100% vào số dư RVT.");
+        db.update("UPDATE dbo.DonDatVe SET TrangThai='DA_HUY',HuyLuc=SYSUTCDATETIME(),LyDoHuy=?,PhiHuy=?,TienHoan=? WHERE DonDatVeID=?",reason.isBlank()?"Khách hủy đơn":reason.strip(),paid.signum()>0?fee:null,paid.signum()>0?paid.subtract(fee):null,o.get("DonDatVeID"));
+        notifications.order(o,"CANCEL","Đơn vé đã hủy",paid.signum()==0?"Đã giải phóng chỗ.":"Đã giải phóng chỗ. Hoàn "+paid.subtract(fee).stripTrailingZeros().toPlainString()+" đồng vào số dư RVT"+(fee.signum()>0?", phí hủy "+fee.stripTrailingZeros().toPlainString()+" đồng ("+tier.feePercent()+"%).":"."));
     }
     private Map<String,Object> lockedOrder(String code,String phone) {
         // Lock trip before order: same lock ordering as allocator and expiry worker.
@@ -296,7 +328,7 @@ public class TicketService {
         wallet.refund(o);
         db.update("UPDATE v SET TrangThai='DA_HUY',DangChiemCho=0 FROM dbo.DangKyVe v JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=v.DangKyID WHERE d.DonDatVeID=? AND v.TrangThai IN('GIU_CHO','DA_THANH_TOAN')",o.get("DonDatVeID"));
         db.update("UPDATE p SET TrangThai='DA_HOAN',HoanLuc=SYSUTCDATETIME() FROM dbo.ThanhToan p JOIN dbo.DonDatVeChiTiet d ON d.DangKyID=p.DangKyID WHERE d.DonDatVeID=? AND p.TrangThai='THANH_CONG'",o.get("DonDatVeID"));
-        db.update("UPDATE dbo.DonDatVe SET TrangThai='DA_HUY',HuyLuc=SYSUTCDATETIME(),LyDoHuy=? WHERE DonDatVeID=?",reason.strip(),o.get("DonDatVeID"));
+        db.update("UPDATE dbo.DonDatVe SET TrangThai='DA_HUY',HuyLuc=SYSUTCDATETIME(),LyDoHuy=?,PhiHuy=CASE WHEN ?>0 THEN 0 END,TienHoan=CASE WHEN ?>0 THEN ? END WHERE DonDatVeID=?",reason.strip(),o.get("TienSeHoan"),o.get("TienSeHoan"),o.get("TienSeHoan"),o.get("DonDatVeID"));
         notifications.order(o,"CANCEL","Quản trị đã hủy đơn",reason.strip()+". Số tiền đã thanh toán được hoàn vào số dư RVT.");
         audit(actor,"CANCEL",code);
     }

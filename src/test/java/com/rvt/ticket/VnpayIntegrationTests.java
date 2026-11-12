@@ -189,7 +189,7 @@ class VnpayIntegrationTests {
         gateway.resolveReview(ref,"Đối chiếu khoản thu thứ hai, giữ nguyên vé đã cấp.","admin");
         assertEquals("DA_THANH_TOAN",state(code));assertEquals(before,tickets.staffOrder(code).get("tickets"));assertEquals(2,receipts(code));
         var amount=(BigDecimal)tickets.order(code,PHONE).get("TongTien");assertEquals(0,amount.compareTo(wallet.balance(name)));
-        tickets.cancel(code,PHONE,"Thay đổi kế hoạch");assertEquals(0,amount.multiply(BigDecimal.valueOf(2)).compareTo(wallet.balance(name)));assertEquals(2,wallet.history(name,1).size());
+        tickets.cancel(code,PHONE,"Thay đổi kế hoạch");assertEquals(0,amount.add(WalletPassengerIntegrationTests.afterFee(amount)).compareTo(wallet.balance(name)));assertEquals(2,wallet.history(name,1).size());
     }
     @Test void exceptionRefundHttpRequiresAdminCsrfAndReason() throws Exception {
         String name=customer(),code=booking(name);var f=callback(code,name);expire(code);gateway.ipn(f);
@@ -217,7 +217,7 @@ class VnpayIntegrationTests {
     BigDecimal value(Map<String,Object> m,String key){return (BigDecimal)m.get(key);}
     @Test void reportSeparatesGatewayCaptureFromWalletReuseAndExceptionRefund(){
         var before=money();String name=customer(),first=booking(name);var f=callback(first,name);gateway.ipn(f);var amount=(BigDecimal)tickets.order(first,PHONE).get("TongTien");
-        tickets.cancel(first,PHONE,"Thay đổi kế hoạch");String second=booking(name);tickets.pay(second,PHONE,"RVT",name);
+        tickets.adminCancelOrder(first,"Theo yêu cầu khách","admin");String second=booking(name);tickets.pay(second,PHONE,"RVT",name);
         String third=booking(name);var late=callback(third,name);expire(third);gateway.ipn(late);gateway.resolveReview(late.get("vnp_TxnRef"),"Đã đối chiếu, hoàn khoản thu cho đơn hết hạn.","admin");
         var after=money();assertEquals(0,amount.multiply(BigDecimal.valueOf(2)).compareTo(value(after,"vnpayVerified").subtract(value(before,"vnpayVerified"))));
         assertEquals(0,amount.compareTo(value(after,"walletDebits").subtract(value(before,"walletDebits"))));

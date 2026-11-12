@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Đổi ngày / giờ đi')}"></head><body><header th:replace="~{fragments :: header('')}"></header>
+<main id="main-content" class="container page">
+<a class="text-link" th:href="@{/don-ve/{code}(code=${order.MaDon})}">← Quay lại đơn vé</a>
+<div class="eyebrow">Đổi vé · Bước 1/2</div><h1 class="page-title">Chọn chuyến mới.</h1>
+<p class="muted" th:text="'Đơn '+${order.MaDon}+' · '+${order.NoiDi}+' → '+${order.NoiDen}+' · '+${#lists.size(order.tickets)}+' hành khách. Chuyến hiện tại: '+${#dates.format(order.KhoiHanh,'HH:mm dd/MM/yyyy')}+'.'"></p>
+<div th:replace="~{fragments :: messages}"></div>
+<div class="notice small-text">Chỉ đổi sang chuyến cùng tuyến, mỗi đơn đổi một lần, không mất phí đổi. Giữ nguyên hành khách và hành lý; giá tính theo chuyến mới. Nếu chuyến mới đắt hơn, phần chênh lệch trừ vào số dư RVT; rẻ hơn thì hoàn phần chênh lệch vào số dư RVT.</div>
+<form th:action="@{/don-ve/{code}/doi-ve(code=${order.MaDon})}" method="get" class="filter-bar"><label>Ngày đi mới<input type="date" name="date" th:value="${date}" th:min="${today}" required></label><button class="button outline small">Xem chuyến</button></form>
+<div class="card empty-state" th:if="${#lists.isEmpty(trips)}"><h2>Không có chuyến phù hợp trong ngày này</h2><p>Chọn ngày khác. Chuyến phải còn đủ chỗ cho cả đơn.</p></div>
+<article class="trip-card" th:each="trip:${trips}"><div class="trip-main">
+ <div class="operator"><div><h3 th:text="${trip.TenHienThi}"></h3><span class="pill soft" th:text="${trip.TenPhuongTien}"></span><small th:text="${trip.MaChuyenHienThi}"></small></div></div>
+ <div class="trip-route"><div><strong th:text="${#dates.format(trip.KhoiHanh,'HH:mm')}"></strong><span th:text="${trip.NoiDi}"></span></div><div class="route-line"><span></span><small th:text="${trip.ThoiLuong}"></small></div><div><strong th:text="${#dates.format(trip.DuKienDen,'HH:mm')}"></strong><span th:text="${trip.NoiDen}"></span></div></div>
+ <div class="trip-price"><small>Giá cơ bản / người</small><strong th:text="${#numbers.formatDecimal(trip.GiaCoBan,0,'POINT',0,'COMMA')}+' ₫'"></strong><small th:text="${trip.ConCho}+' chỗ còn trống'"></small><a class="button" th:href="@{/don-ve/{code}/doi-ve/{id}(code=${order.MaDon},id=${trip.ChuyenDiID})}">Chọn chuyến này</a></div>
+</div></article>
+</main><footer th:replace="~{fragments :: footer}"></footer></body></html>

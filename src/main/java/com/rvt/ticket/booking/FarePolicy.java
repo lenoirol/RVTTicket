@@ -15,6 +15,11 @@ public final class FarePolicy {
     }
     public static BigDecimal discounted(BigDecimal adult){return adult.multiply(new BigDecimal("0.8")).divide(BigDecimal.valueOf(1000),0,RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(1000)).max(BigDecimal.valueOf(1000));}
     public static boolean refundAllowed(java.time.LocalDateTime departure,java.time.LocalDateTime now){return !departure.isBefore(now.plusHours(24));}
+    /** Phí hủy = số tiền đã trả × tỷ lệ của mốc, làm tròn tới 1.000 đồng và không vượt số đã trả. */
+    public static BigDecimal cancellationFee(BigDecimal paid,BigDecimal rate){
+        if(paid==null||paid.signum()<=0)return BigDecimal.ZERO;
+        return paid.multiply(rate).divide(BigDecimal.valueOf(1000),0,RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(1000)).min(paid).max(BigDecimal.ZERO);
+    }
     public static BigDecimal passengerFare(String group,BigDecimal adult,BigDecimal child,BigDecimal senior,boolean vip){
         if(vip||"NGUOI_LON".equals(group))return adult;
         return "TRE_EM".equals(group)?(child==null?discounted(adult):child):(senior==null?discounted(adult):senior);

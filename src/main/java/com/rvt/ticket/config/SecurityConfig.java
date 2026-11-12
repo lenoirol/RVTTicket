@@ -26,7 +26,8 @@ public class SecurityConfig {
                         "/admin/ho-tro", "/admin/ho-tro/**", "/admin/tai-khoan", "/admin/tai-khoan/**", "/staff", "/staff/**").hasAnyRole("ADMIN", "OPERATOR")
                 .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                 .requestMatchers("/tai-khoan", "/tai-khoan/**", "/lich-hen", "/lich-hen/**", "/api/don-ve/**").hasAnyRole("CUSTOMER", "TRAVELER", "AGENT")
-                .requestMatchers("/dat-ve/**", "/don-ve/*/thanh-toan", "/don-ve/*/huy").hasAnyRole("CUSTOMER", "TRAVELER", "AGENT")
+                .requestMatchers("/dat-ve/**", "/don-ve/*/thanh-toan", "/don-ve/*/huy", "/don-ve/*/khuyen-mai", "/don-ve/*/khuyen-mai/**",
+                        "/don-ve/*/doi-ve", "/don-ve/*/doi-ve/**", "/don-ve/*/hoa-don").hasAnyRole("CUSTOMER", "TRAVELER", "AGENT")
                 .anyRequest().permitAll())
             .formLogin(f -> f.loginPage("/login").successHandler(new BookingLoginSuccessHandler()).permitAll())
             .logout(l -> l.logoutSuccessUrl("/"))

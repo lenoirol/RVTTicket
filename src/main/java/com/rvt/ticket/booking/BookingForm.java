@@ -16,6 +16,11 @@ public class BookingForm {
     @NotBlank @Pattern(regexp="[0-9]{10,15}", message="Số điện thoại phải có 10–15 chữ số") private String phone;
     @Email @Size(max=254) private String email;
     @NotEmpty @Size(max=8) @Valid private List<Passenger> passengers = new ArrayList<>();
+    /** Điểm đón / trả đã chọn; null = bến mặc định của chuyến. */
+    private Integer pickupId;
+    private Integer dropoffId;
+    public Integer getPickupId(){return pickupId;} public void setPickupId(Integer v){pickupId=v;}
+    public Integer getDropoffId(){return dropoffId;} public void setDropoffId(Integer v){dropoffId=v;}
     public String getName() { return name; }
     public void setName(String v) { name=v; }
     public String getPhone() { return phone; }

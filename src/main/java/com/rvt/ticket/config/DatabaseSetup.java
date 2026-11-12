@@ -39,6 +39,7 @@ public class DatabaseSetup implements ApplicationRunner {
         admins.seed();
         if(changed)places.seed(); else places.linkTrips();
         fleet.seed();
+        seedLayoutShowcase();
         tickets.closeInvalidTrips();
         seedSeaRoutes();
         tickets.closeSupersededReferenceTrips();
@@ -55,7 +56,7 @@ public class DatabaseSetup implements ApplicationRunner {
     }
     private static final List<String> EXECUTE_SCRIPTS=List.of("V2__orders_and_layout.sql","V3__operations.sql","V4__fleet_and_places.sql","V5__admin_workspace.sql",
         "V6__rvt_balance_and_passengers.sql","V7__product_workflows.sql","V8__passenger_profile.sql","V9__vnpay_sandbox.sql","V10__operational_integrity.sql");
-    private static final List<String> BATCH_SCRIPTS=List.of("V11__appointments_roles.sql","V12__search_index.sql");
+    private static final List<String> BATCH_SCRIPTS=List.of("V11__appointments_roles.sql","V12__search_index.sql","V13__booking_features.sql");
     private static String script(String file) throws java.io.IOException {return new ClassPathResource("db/migration/"+file).getContentAsString(StandardCharsets.UTF_8);}
     private static String fingerprint() throws Exception {
         var digest=java.security.MessageDigest.getInstance("SHA-256");
@@ -73,6 +74,35 @@ public class DatabaseSetup implements ApplicationRunner {
             }
             return null;
         });
+    }
+    /**
+     * Chuyến minh họa cho hai sơ đồ xe mới (giường nằm 41 chỗ có hàng cuối 5 giường, limousine giường phòng 2 dãy).
+     * Mỗi xe chạy đi / về luân phiên trong 7 ngày nên lịch xe luôn nối tiếp nhau. Chỉ tạo một lần.
+     */
+    private void seedLayoutShowcase(){
+        if(db.queryForObject("SELECT COUNT(*) FROM dbo.ChuyenDi WHERE MaChuyen LIKE 'RVT-GN-%'",Integer.class)>0)return;
+        LocalDate start=tickets.databaseNow().plusHours(7).toLocalDate().plusDays(1);
+        record Line(String vehicle,String tag,String a,String b,String stationA,String stationB,int outHour,int backHour,int hours,int price,String amenities){}
+        var lines=List.of(
+            new Line("RVT-MAU-4","DL","TP. Hồ Chí Minh","Đà Lạt","Bến xe Miền Đông","Bến xe Liên tỉnh Đà Lạt",22,13,7,300000,"Giường nằm 3 dãy, hàng cuối 5 giường, Điều hòa, Chăn gối, Nước suối, Wifi"),
+            new Line("RVT-MAU-5","NT","TP. Hồ Chí Minh","Nha Trang","Bến xe Miền Đông","Bến xe phía Nam Nha Trang",21,12,8,480000,"Limousine giường phòng 2 dãy, rèm riêng, Điều hòa, Chăn gối, Nước suối, Wifi, Sạc USB"));
+        for(var line:lines){
+            var ids=db.queryForList("SELECT PhuongTienID FROM dbo.PhuongTien WHERE MaPhuongTien=? AND HoatDong=1",Integer.class,line.vehicle());
+            // Xe đã có lịch (do quản trị phân công) thì không chen lịch minh họa vào.
+            if(ids.isEmpty()||db.queryForObject("SELECT COUNT(*) FROM dbo.ChuyenDi WHERE PhuongTienID=?",Integer.class,ids.getFirst())>0)continue;
+            for(int day=0;day<7;day++){
+                for(int leg=0;leg<2;leg++){
+                    var f=new com.rvt.ticket.booking.TripForm();
+                    f.setCode("RVT-GN-"+line.tag()+"-"+day+"-"+leg);f.setOperator("RVT mẫu");f.setLayout("BUS_SLEEPER");f.setVehicleId(ids.getFirst());
+                    f.setFrom(leg==0?line.a():line.b());f.setTo(leg==0?line.b():line.a());f.setPickup(leg==0?line.stationA():line.stationB());f.setDropoff(leg==0?line.stationB():line.stationA());
+                    var departure=leg==0?start.plusDays(day).atTime(line.outHour(),0):start.plusDays(day+1).atTime(line.backHour(),0);
+                    f.setDeparture(departure);f.setArrival(departure.plusHours(line.hours()));f.setPrice(BigDecimal.valueOf(line.price()));
+                    f.setAmenities(line.amenities());f.setDescription("Chuyến minh họa sơ đồ xe giường nằm theo loại xe. Có mặt trước giờ khởi hành 30 phút.");
+                    // Lịch đi / về nối tiếp nhau, cách nhau trên 30 phút, nên các kiểm tra mở bán luôn đạt.
+                    int id=tickets.createTrip(f);tickets.changeSale(id,"MO_BAN");
+                }
+            }
+        }
     }
     private void seedSeaRoutes(){
         if(db.queryForObject("SELECT COUNT(*) FROM dbo.ChuyenDi WHERE MaChuyen LIKE 'RVT-SEA-%'",Integer.class)>0)return;

@@ -30,6 +30,25 @@ public class WalletService {
             db.update("INSERT dbo.HoanRVTChoNhan(DonDatVeID,SoTien) SELECT ?,? WHERE NOT EXISTS(SELECT 1 FROM dbo.HoanRVTChoNhan WHERE DonDatVeID=?)",order.get("DonDatVeID"),amount,order.get("DonDatVeID"));
         }else credit(order,amount);
     }
+    /** Hoàn một phần (sau khi trừ phí hủy). Đơn chưa gắn tài khoản: lưu khoản chờ nhận như hoàn toàn phần. */
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public void refundPartial(Map<String,Object> order,BigDecimal amount,BigDecimal fee){
+        if(amount==null||amount.signum()<=0)return;
+        if(order.get("TaiKhoanID")==null){
+            db.update("INSERT dbo.HoanRVTChoNhan(DonDatVeID,SoTien) SELECT ?,? WHERE NOT EXISTS(SELECT 1 FROM dbo.HoanRVTChoNhan WHERE DonDatVeID=?)",order.get("DonDatVeID"),amount,order.get("DonDatVeID"));
+            return;
+        }
+        var account=db.queryForMap("SELECT TaiKhoanID,SoDuRVT FROM dbo.TaiKhoanKhach WITH(UPDLOCK,HOLDLOCK) WHERE TaiKhoanID=?",order.get("TaiKhoanID"));
+        movement(order,account,amount,"REFUND:","Hoàn đơn "+order.get("MaDon")+(fee.signum()>0?" (đã trừ phí hủy "+fee.stripTrailingZeros().toPlainString()+" đồng)":""));
+    }
+    /** Chênh lệch khi đổi vé: dương là cộng vào số dư, âm là trừ. Khóa sự kiện riêng để không ghi hai lần. */
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public void exchangeDifference(Map<String,Object> newOrder,String username,BigDecimal amount,String oldCode){
+        if(amount.signum()==0)return;
+        var rows=db.queryForList("SELECT TaiKhoanID,SoDuRVT FROM dbo.TaiKhoanKhach WITH(UPDLOCK,HOLDLOCK) WHERE TenDangNhap=? AND BiKhoa=0",username);
+        if(rows.isEmpty()||!Objects.equals(rows.getFirst().get("TaiKhoanID"),newOrder.get("TaiKhoanID")))throw new IllegalArgumentException("Chỉ chủ đơn được đổi vé.");
+        movementKey(newOrder,rows.getFirst(),amount,"EXCHANGE:"+newOrder.get("DonDatVeID"),(amount.signum()>0?"Hoàn chênh lệch khi đổi từ đơn ":"Trả thêm chênh lệch khi đổi từ đơn ")+oldCode+" sang "+newOrder.get("MaDon"));
+    }
     private void credit(Map<String,Object> order,BigDecimal amount){
         var account=db.queryForMap("SELECT TaiKhoanID,SoDuRVT FROM dbo.TaiKhoanKhach WITH(UPDLOCK,HOLDLOCK) WHERE TaiKhoanID=?",order.get("TaiKhoanID"));
         movement(order,account,amount,"REFUND:","Hoàn toàn bộ đơn "+order.get("MaDon"));

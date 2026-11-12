@@ -38,6 +38,11 @@ public class BusTicketStrategy implements TicketStrategy {
         return FarePolicy.luggageFee(kg, allowance, maximum, rate);
     }
 
+    /** Phí hủy theo mốc thời gian trước giờ khởi hành. */
+    private static final List<CancellationTier> CANCELLATION = List.of(new CancellationTier(24, new BigDecimal("0.10")), new CancellationTier(4, new BigDecimal("0.25")));
+    @Override public List<CancellationTier> cancellationTiers() { return CANCELLATION; }
+    @Override public int exchangeMinHours() { return 6; }
+
     @Override public List<LocalTime> appointmentSlots() { return SLOTS; }
     @Override public int appointmentCapacityPerSlot() { return 4; }
 

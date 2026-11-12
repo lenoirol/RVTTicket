@@ -1,0 +1,7 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Tra cứu hóa đơn')}"></head><body><header th:replace="~{fragments :: header('')}"></header>
+<main id="main-content" class="container narrow page"><div class="eyebrow">Hóa đơn điện tử</div><h1 class="page-title">Tra cứu hóa đơn.</h1>
+<p class="muted">Nhập mã tra cứu 10 ký tự in trên hóa đơn.</p><div th:replace="~{fragments :: messages}"></div>
+<form th:action="@{/hoa-don}" method="post" class="card stack no-print"><label>Mã tra cứu<input name="lookup" required maxlength="10" pattern="[A-Za-z0-9]{10}" autocomplete="off" th:value="${lookup}"></label><button class="button orange">Tra cứu</button></form>
+<article class="card invoice section" th:if="${invoice!=null}" th:insert="~{invoice :: sheet(${invoice},${invoice.MaDon},${invoice.NoiDi}+' → '+${invoice.NoiDen},${invoice.KhoiHanh},${invoice.SoVe},${invoice.TrangThaiDon})}"></article>
+<p class="no-print" th:if="${invoice!=null}"><button type="button" class="button outline" onclick="window.print()">In / Lưu PDF</button></p>
+</main><footer th:replace="~{fragments :: footer}"></footer></body></html>

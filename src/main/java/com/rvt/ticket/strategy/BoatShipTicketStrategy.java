@@ -65,6 +65,11 @@ public class BoatShipTicketStrategy implements TicketStrategy {
         return FarePolicy.luggageFee(kg, allowance, maximum, rate);
     }
 
+    /** Phí hủy theo mốc thời gian trước giờ khởi hành. */
+    private static final List<CancellationTier> CANCELLATION = List.of(new CancellationTier(48, new BigDecimal("0.10")), new CancellationTier(24, new BigDecimal("0.20")), new CancellationTier(12, new BigDecimal("0.40")));
+    @Override public List<CancellationTier> cancellationTiers() { return CANCELLATION; }
+    @Override public int exchangeMinHours() { return 24; }
+
     @Override public List<LocalTime> appointmentSlots() { return SLOTS; }
     @Override public int appointmentCapacityPerSlot() { return 2; }
 

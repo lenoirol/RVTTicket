@@ -1,0 +1,36 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Chọn chỗ cho chuyến mới')}"></head><body><header th:replace="~{fragments :: header('')}"></header>
+<main id="main-content" class="container page">
+<a class="text-link" th:href="@{/don-ve/{code}/doi-ve(code=${order.MaDon})}">← Chọn chuyến khác</a>
+<div class="eyebrow">Đổi vé · Bước 2/2</div><h1 class="page-title">Chọn chỗ mới.</h1>
+<p class="muted" th:text="${trip.NoiDi}+' → '+${trip.NoiDen}+' · '+${#dates.format(trip.KhoiHanh,'HH:mm dd/MM/yyyy')}+' · '+${trip.TenPhuongTien}"></p>
+<div th:replace="~{fragments :: messages}"></div>
+<form th:action="@{/don-ve/{code}/doi-ve/{id}(code=${order.MaDon},id=${trip.ChuyenDiID})}" method="post" class="booking-grid exchange-form" th:attr="data-needed=${needed}" data-busy
+      data-confirm="Xác nhận đổi vé? Đơn cũ sẽ hủy và trả chỗ, tiền đã trả chuyển sang đơn mới.">
+<section class="card"><div class="card-heading"><div><span class="eyebrow" th:text="'Chọn đúng '+${needed}+' chỗ'"></span><h2>Sơ đồ chỗ</h2></div><span class="pill soft" id="exchange-count" th:text="'0/'+${needed}"></span></div>
+<div class="vehicle-layout">
+<section class="deck custom-layout" th:each="floor:${#numbers.sequence(1,maxFloor)}" th:if="${#lists.size(seats.?[Tang == #vars.floor])>0}">
+ <div class="deck-title" th:text="${trip.LoaiVe=='XE_KHACH'?(maxFloor>1?(floor==1?'Tầng dưới':'Tầng trên'):'Sơ đồ ghế'):'Khoang '+floor}"></div>
+ <div class="vehicle-cab" th:if="${trip.LoaiVe=='XE_KHACH' and floor==1}"><span class="driver-seat">Ghế tài xế</span><span class="cab-label">Đầu xe</span><span class="door">Cửa lên xuống</span></div>
+ <div class="vehicle-front" th:unless="${trip.LoaiVe=='XE_KHACH' and floor==1}" th:text="${trip.LoaiVe=='XE_KHACH'?'Đầu xe ↑':'Mũi tàu ↑'}"></div>
+ <div class="seat-map">
+  <label class="seat seat-check" th:each="seat:${seats}" th:if="${seat.Tang==floor}" th:classappend="${(seat.DaDat==1?'taken ':'')+(seat.LoaiCho=='GIUONG_NAM'?'sleeper':(seat.LoaiCho=='VIP'?'vip':''))}" th:style="'grid-row:'+${seat.Hang}+';grid-column:'+${seat.Cot}">
+   <input type="checkbox" name="seat" th:value="${seat.MaCho}" th:disabled="${seat.DaDat==1}" class="sr-only"><span th:text="${seat.MaCho}"></span></label>
+ </div>
+</section></div></section>
+<aside class="card booking-summary"><span class="eyebrow">Đơn hiện tại</span><h2 th:text="${order.MaDon}"></h2>
+ <p class="small-text" th:text="'Đã thanh toán: '+${#numbers.formatDecimal(order.TienSeHoan,0,'POINT',0,'COMMA')}+' ₫ cho '+${needed}+' hành khách'"></p>
+ <ol class="small-text"><li th:each="t:${order.tickets}" th:text="${t.TenHanhKhach}+' · chỗ cũ '+${t.MaCho}"></li></ol>
+ <p class="small-text muted">Chỗ mới gán cho hành khách theo thứ tự chọn. Giá mới và phần chênh lệch được tính khi xác nhận.</p>
+ <p class="small-text" th:text="'Số dư RVT hiện có: '+${#numbers.formatDecimal(walletBalance,0,'POINT',0,'COMMA')}+' ₫'"></p>
+ <button class="button orange wide" id="exchange-submit" disabled>Xác nhận đổi vé</button>
+</aside></form>
+<script>
+(()=>{const f=document.querySelector('.exchange-form');if(!f)return;const need=+f.dataset.needed,count=document.getElementById('exchange-count'),btn=document.getElementById('exchange-submit');
+const order=[];f.addEventListener('change',e=>{const c=e.target;if(c.name!=='seat')return;
+ if(c.checked){if(order.length>=need){c.checked=false;return;}order.push(c);}else{const i=order.indexOf(c);if(i>=0)order.splice(i,1);}
+ c.closest('label').classList.toggle('selected',c.checked);
+ // Giữ thứ tự chọn khi gửi: đưa ô đã chọn về cuối form theo thứ tự.
+ count.textContent=order.length+'/'+need;btn.disabled=order.length!==need;});
+f.addEventListener('submit',()=>{if(f.dataset.confirmed!=='true'||f.dataset.ordered)return;f.dataset.ordered='1';order.forEach(c=>{const h=document.createElement('input');h.type='hidden';h.name='seat';h.value=c.value;f.appendChild(h);c.disabled=true;});});})();
+</script>
+</main><footer th:replace="~{fragments :: footer}"></footer></body></html>

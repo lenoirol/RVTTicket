@@ -40,6 +40,18 @@ public interface TicketStrategy {
     /** Phí hành lý theo định mức từ bảng QuyTacVe. */
     BigDecimal luggageFee(BigDecimal kg, BigDecimal allowance, BigDecimal maximum, BigDecimal rate);
 
+    // ---- Hủy và đổi vé ----
+    /** Các mốc phí hủy, sắp theo số giờ giảm dần. Hủy muộn hơn mốc cuối thì không được hủy. */
+    List<CancellationTier> cancellationTiers();
+    /** Số giờ tối thiểu trước khởi hành để được đổi sang chuyến khác. */
+    int exchangeMinHours();
+    /** Mốc áp dụng cho thời điểm hủy; null nếu đã quá hạn hủy. */
+    default CancellationTier cancellationTier(java.time.Duration beforeDeparture) {
+        long minutes = beforeDeparture.toMinutes();
+        for (var tier : cancellationTiers()) if (minutes >= tier.minHoursBefore() * 60L) return tier;
+        return null;
+    }
+
     // ---- Lịch hẹn tư vấn (Workflow 4) ----
     /** Các khung giờ tư vấn trong ngày. */
     List<LocalTime> appointmentSlots();
